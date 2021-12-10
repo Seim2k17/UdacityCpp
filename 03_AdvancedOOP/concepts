@@ -1,0 +1,8 @@
+1. Polymorphism&Inheritance
+-------------
+- functions  can  work with multiple different types of data = example for polymorphism
+
+2.inheritance
+----------
+- build on something general to make something more specific
+- this "only" works well when there is a hierachy of things

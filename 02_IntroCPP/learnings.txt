@@ -1,0 +1,90 @@
+common:
+-------
+
+- C. XXXX refers to CPP guidelines (https://github.com/isocpp/CppCoreGuidelines | http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#S-introduction)
+- here we refer often to the CPP guiedelines, which is good ^^
+
+lession 25: static variables:
+----------------------------
+- a static variable belongs to the whole class not to an indivudual object/instance of the class
+- a static member is created ONC and shared by all instances
+-> if a static member gets changed -> all member of the class see that change the next time they access the static member
+- if static and const it need to be constexpr (evaluated at compile time)
+
+
+lession 22. absteraction
+-------------------
+- Abstraction refers to the separation of a class's interface from the details of its implementation. 
+- The interface provides a way to interact with an object, while hiding the details and implementation of how the class works.
+
+
+lession 14. encapsulation
+-----------
+- group behavior/data that is necessary & belongs together in a class and "outsource" data/logic that maybe is related but not necessary to group together (e.g. tomorrow not needs to be encapsulated inside a date class
+
+lession 12. initializer list
+-----------
+- allow us to initialize member data before an object is created
+- if we don't have invariant checks inside constructors we can use the intilizer list for member data
+- we can also declare member variables const, but only if the member variable is initialized whrough initializer list
+- e.g. use a class Birthday instead of Date we can introduce const member and init them through the initializer list, but then no invariant checks are allowed (later we will have advanced technics for this, loking forward to this !
+- with initializer list compiler can optimize init faster than in the constructor or through assignment
+- when attributes defined as references we must use initializer lists
+
+
+lession 11: scope resolution operator (::)
+-----------
+-  The process of determining which identifier to use is called "scope resolution".
+- different identifiwers can have the same name as long as they have different scope
+- particulary useful when separating class declaration from class definition
+- namespaces allow programmers to group logical stuff together & help to avoid conflicts
+e.g.
+
+
+lession 10.
+ctdor
+- to instantiate objects from classes
+- rule of thumb: use ctdor to initialize data-members and don't have complex stuff in it
+namespace English {
+void Hello() { std::cout << "Hello, World!\n"; }
+}  // namespace English
+
+namespace Spanish {
+void Hello() { std::cout << "Hola, Mundo!\n"; }
+}  // namespace Spanish
+
+int main() {
+  English::Hello();
+  Spanish::Hello();
+}
+
+lession 8./9.
+---------
+encapsulation: bundle related stuff together in a simple class
+abstraction: users only need to know the interface of a class and not how to store or implement features; hides data
+both are related
+- to protect the data we only provide a public interface
+
+lession 7.
+---------
+- C.2: Use class if the class has an invariant; use struct if the data members can vary independentlyC.2: Use class if the class has an invariant; use struct if the data members can vary independentlycommon:
+(An invariant is a logical condition for the members of an object that a constructor must establish for the public member functions to assume. After the invariant is established (typically by a constructor) every member function can be called for the object. An invariant can be stated informally (e.g., in a comment) or more formally using Expects.
+If all data members can vary independently of each other, no invariant is possible.)
+ - An "invariant" is a rule that limits the values of member variables.
+
+lession 6.
+---------
+
+- initoalizer list
+- can also initialize simple types with initalizer list: int day{1}
+    -> ASSERT(day==1) 
+- accessor = getter
+- mutator = setter
+- access modifiers are public/private
+
+- avoid trivial getters/setters (C.131.))
+-> of only return of values and no checks are involved in the getter/setter functions
+-> use a struct and all stuff inside the strcut is public by default
+-> make also use  of initalizer list/default initalizer (C.49: Prefer initialization to assignment in constructors)
+
+
