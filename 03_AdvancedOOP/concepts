@@ -6,3 +6,32 @@
 ----------
 - build on something general to make something more specific
 - this "only" works well when there is a hierachy of things
+
+6. Composition
+-------
+- a car do not inherit from wheel but consist of wheels
+A common way to distinguish "composition" from "inheritance" is to think about what an object can do,
+rather than what it is. 
+This is often expressed as "has a" versus "is a".
+From the standpoint of composition, a cat "has a" head and "has a" set of paws and "has a" tail.
+
+There is no hard and fast rule about when to prefer composition over inheritance. 
+In general, if a class needs only extend a small amount of functionality beyond 
+what is already offered by another class, it makes sense to inherit from that other class. 
+However, if a class needs to contain functionality from a variety of otherwise unrelated classes, 
+it makes sense to compose the class from those other classes.
+
+8. Friends
+----------
+- friend classes provide an alternative inheritance mechanism to derived classes. (C++)
+- the main difference btw. inheritance and friend inheritance is that frined class can access private members
+
+9. Polymorphism
+---------------
+
+- Polymorphism is means "assuming many forms".
+
+In the context of object-oriented programming, polymorphism) describes a paradigm in which a function may behave differently depending on how it is called. In particular, the function will perform differently based on its inputs.
+
+Polymorphism can be achieved in two ways in C++: overloading and overriding. In this exercise we will focus on overloading.
+
