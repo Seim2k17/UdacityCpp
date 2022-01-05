@@ -1,0 +1,53 @@
+Concepts
+#########
+
+
+8. Linux parser namespace
+
+- LinuxParser is not a class but a namespace to access which gets the relevant data from the linux file system
+
+- just read the data from the files per streams and set the needed data .
+
+- e.g.:
+
+  const std::string kProcDirectory{"/proc/"};
+  const std::string kVersionFilename{"/version"};
+
+  string os, version, kernel;
+  string line;
+  std::ifstream stream(kProcDirectory + kVersionFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> os >> version >> kernel;
+  }
+  return kernel;
+
+- inside /proc/ folder there are integer-folder -> these are pids of processes
+
+
+7. system data
+
+- linux stires a lot of system data in files in /proc directory
+
+- infos about the os itself is in the /etc/os-release file 
+--> e.g. PRETTY_NAME="Ubuntu 20.04.3 LTS"
+
+- infos about the kernel: /proc/version - file
+
+- infos about memory utilization: /proc/meminfo - file
+  further infos: 
+    - https://www.thegeekdiary.com/understanding-proc-meminfo-file-analyzing-memory-utilization-in-linux/
+    - https://access.redhat.com/solutions/406773
+    - htop-meanings from meminfo: https://stackoverflow.com/questions/41224738/how-to-calculate-system-memory-usage-from-proc-meminfo-like-htop/41251290#41251290
+
+- total/running processes: /proc/stat
+- uptime: /proc/uptime - file shows the uptime of the system in seconds and the amount in idle process
+  fuerther infos: - https://man7.org/linux/man-pages/man5/proc.5.html
+
+4. Structure
+
+- system has a container of threads and processor
+- there methods from linuxParser are called , which parse data from the linux file system
+- then these data is taken to the NCursesDisplay to output the data
+
