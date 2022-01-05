@@ -1,11 +1,144 @@
-1. Polymorphism&Inheritance
--------------
-- functions  can  work with multiple different types of data = example for polymorphism
 
-2.inheritance
+15-17. Generic Programming
+--------------------------
+
+"- you have a bunch of classes
+- you dont want to organize them in a hierachy but you want that this algorithm works for anything. e.g. draw: anything you can draw uses with this algorithm , you get parameterization. it will work if the element typ has the required properties (like draw/rotate...) : the hierarchy disappears" - bjarne
+-> generic programming as an alternative to inheritance
+
+- Templates as a style of generic programming
+
+
+14.Multiple Inheritance: The diamond problem
+---------------------------------------------
+
+- if a class inherits from 2 base classes & both themselves inherit from the same abstract class, a conflict can emerge
+
+e.g.
+class Vehicle {
+  void Move() = 0;
+};
+
+class Boat : public Vehicle
+{
+  void Move() override {"swim"};
+};
+
+class Car : public Vehicle
+{
+  void Move() override {"drive"};
+};
+--> untile here everything is fine
+
+but
+
+if a class is multiple inherited like
+
+class Amphibious : public Boat, public Car {
+  // ... this clas has now inherited the Move() method, BUT which ???
+}
+
+
+12: overriding vs. hiding
+--------------------
+
+class Animal {
+public:
+  virtual std::string Talk() const = 0;
+};
+
+class Cat {
+public:
+  std::string Talk() const { return std::string("Meow"); }
+};
+
+- Cat::Talk overrides the talk method from the baseclass (because iof virtual and mor: pure virtual (=0))
+
+
+class Cat { // Here, Cat does not derive from a base class
+public:
+  std::string Talk() const { return std::string("Meow"); }
+};
+
+class Lion : public Cat {
+public:
+  std::string Talk() const { return std::string("Roar"); }
+};
+
+- Lion::Talk() hides the Cat::Talk method
+
+In this situation, Lion::Talk() is hiding Cat::Talk(). If Cat::Talk() were virtual, then Lion::Talk() would override Cat::Talk(), instead of hiding it. Overriding requires a virtual function in the base class.
+
+The distinction between overriding and hiding is subtle and not terribly significant, but in certain situations hiding can lead to bizarre errors, particularly when the two functions have slightly different function signatures.
+
+"Overriding" a function occurs when a derived class defines the implementation of a virtual function that it inherits from a base class.
+
+It is possible, but not required, to specify a function declaration as override.
+
+This specification tells both the compiler and the human programmer that the purpose of this function is to override a virtual function. The compiler will verify that a function specified as override does indeed override some other virtual function, or otherwise the compiler will generate an error.
+
+Specifying a function as override is good practice, as it empowers the compiler to verify the code, and communicates the intention of the code to future users.
+
+11. Virtual functions
+--------------
+
+- Virtual functions are a polymorphic feature. These functions are declared (and possibly defined) in a base class, and can be overridden by derived classes.
+
+This approach declares an interface at the base level, but delegates the implementation of the interface to the derived classes.
+
+- A pure virtual function is a virtual function that the base class declares but does not define. (=0)
+- A pure virtual function has the side effect of making its class abstract. (No instance of this class is allowed)
+
+10. Polymorphism via Operator Overloading
+--------------
+
+- 
+#include <assert.h>
+
+// TODO: Define Point class
+class Point {
+    
+ public:
+    Point(int p_x, int p_y)
+        :x(p_x),y(p_y)
+        {}
+    Point operator+(Point& Point2){
+        Point result(0,0);
+        result.x = this->x + Point2.x;
+        result.y = this->y + Point2.y;
+        return result;
+    }
+    
+    int x;
+    int y;
+};
+  // TODO: Define public constructor
+  // TODO: Define + operator overload
+  // TODO: Declare attributes x and y
+
+// Test in main()
+int main() {
+  Point p1(10, 5), p2(2, 4);
+  Point p3 = p1 + p2; // An example call to "operator +";
+  assert(p3.x == p1.x + p2.x);
+  assert(p3.y == p1.y + p2.y);
+}
+
+
+9. Polymorphism
+---------------
+
+- Polymorphism is means "assuming many forms".
+
+In the context of object-oriented programming, polymorphism) describes a paradigm in which a function may behave differently depending on how it is called. In particular, the function will perform differently based on its inputs.
+
+Polymorphism can be achieved in two ways in C++: overloading and overriding. In this exercise we will focus on overloading.
+
+8. Friends
 ----------
-- build on something general to make something more specific
-- this "only" works well when there is a hierachy of things
+- friend classes provide an alternative inheritance mechanism to derived classes. (C++)
+- the main difference btw. inheritance and friend inheritance is that frined class can access private members
+
 
 6. Composition
 -------
@@ -21,17 +154,12 @@ what is already offered by another class, it makes sense to inherit from that ot
 However, if a class needs to contain functionality from a variety of otherwise unrelated classes, 
 it makes sense to compose the class from those other classes.
 
-8. Friends
+2.inheritance
 ----------
-- friend classes provide an alternative inheritance mechanism to derived classes. (C++)
-- the main difference btw. inheritance and friend inheritance is that frined class can access private members
+- build on something general to make something more specific
+- this "only" works well when there is a hierachy of things
 
-9. Polymorphism
----------------
-
-- Polymorphism is means "assuming many forms".
-
-In the context of object-oriented programming, polymorphism) describes a paradigm in which a function may behave differently depending on how it is called. In particular, the function will perform differently based on its inputs.
-
-Polymorphism can be achieved in two ways in C++: overloading and overriding. In this exercise we will focus on overloading.
+1. Polymorphism&Inheritance
+-------------
+- functions  can  work with multiple different types of data = example for polymorphism
 
