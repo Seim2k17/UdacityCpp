@@ -1,6 +1,38 @@
 Concepts
 #########
 
+13. process data
+
+- data about individual processes are within /proc - folder. each process has its own folder and it called after the PID of the process
+- parsing in c++ is a bit tricky -> starter code
+- the UID (User identifier) of a process can be found under /proc/[PID]/status
+- then the username for the UID can be found in /etc/passwd
+
+11. processor data
+
+- processor utilization data also stored in /proc/stat-file
+- e.g: 18:07 $ cat /proc/stat
+cpu  5968808 840049 1240444 31550860 1325942 0 121528 0 0 0
+cpu0 495454 69881 104184 2628581 115849 0 8285 0 0 0
+cpu1 513292 71696 106910 2601103 115444 0 1753 0 0 0
+-> first line aggregates all the other cpus
+
+- from left to right:
+user: normal processes executing in user mode
+nice: niced processes executing in user mode
+system: processes executing in kernel mode
+idle: twiddling thumbs
+iowait: In a word, iowait stands for waiting for I/O to complete. But there are several problems:
+        Cpu will not wait for I/O to complete, iowait is the time that a task is waiting for I/O to complete. When cpu goes into idle state for outstanding task io, another task will be scheduled on this CPU.
+        In a multi-core CPU, the task waiting for I/O to complete is not running on any CPU, so the iowait of each CPU is difficult to calculate.
+        The value of iowait field in /proc/stat will decrease in certain conditions. So, the iowait is not reliable by reading from /proc/stat.
+irq: servicing interrupts
+softirq: servicing softirqs
+steal: involuntary wait
+guest: running a normal guest
+guest_nice: running a niced guest
+
+- further readings: https://github.com/Leo-G/Data-Science-Wiki / https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux
 
 8. Linux parser namespace
 
