@@ -6,7 +6,7 @@ Concepts
 - data about individual processes are within /proc - folder. each process has its own folder and it called after the PID of the process
 - parsing in c++ is a bit tricky -> starter code
 - the UID (User identifier) of a process can be found under /proc/[PID]/status
-- then the username for the UID can be found in /etc/passwd
+- then the username for the UID can be found in /etc/passwd (except LDAP user ...)
 
 11. processor data
 
