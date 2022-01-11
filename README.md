@@ -1,6 +1,20 @@
 # UdacityCpp
 Source to the Udacity C++ Course (Become a C++ Developer)
 
+Project #2: System Monitor
+
+0. Links
+   https://github.com/udacity/CppND-System-Monitor 
+
+1. Infos
+   git clone git@github:udacity/CppND-System-Monitor.git / git clone https://github.com/udacity/CppND-System-Monitor-Project-Updated.git 
+   (sudo) apt install libncurses5-dev libncursesw5-dev
+   cd repo
+   mkdir build && cd build
+   cmake ..
+   make
+   ./monitor
+
 Project #1: OpenStreetMap Route Planner using IO2D
 
 0. Links

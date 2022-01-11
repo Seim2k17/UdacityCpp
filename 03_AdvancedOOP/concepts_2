@@ -1,0 +1,97 @@
+
+Summary
+- basic engineering: buid st froim requirements: get feedback and iterate and adjust code; to get everything right(perfect the first time is a old good joke ....
+
+21.Class templates:
+------------------
+
+
+Classes are the building blocks of object oriented programming in C++. 
+Templates support the creation of generic classes!
+
+Class templates can declare and implement generic attributes for use by generic methods. 
+These templates can be very useful when building classes that will serve multiple purposes.
+
+#include <assert.h>
+#include <string>
+#include <sstream>
+
+// TODO: Add the correct template specification
+template<typename KeyType, typename ValueType>
+class Mapping {
+public:
+  Mapping(KeyType key, ValueType value) : key(key), value(value) {}
+  std::string Print() const {
+    std::ostringstream stream;
+    stream << key << ": " << value;
+    return stream.str();
+  }
+  KeyType key;
+  ValueType value;
+};
+
+// Test
+int main() {
+  Mapping<std::string, int> mapping("age", 20);
+  assert(mapping.Print() == "age: 20");
+}
+
+20.Deduction
+-----------
+
+Deduction occurs when you instantiate an object without explicitly identifying the types. Instead, the compiler "deduces" the types. This can be helpful for writing code that is generic and can handle a variety of inputs
+
+- the compiler will decude (schlussfolgern) the type from the arguments
+
+instead of
+
+Max<int>(23,2) / Max<char>('a','j') we could write Max(23,2) / Max('a','j') and the compiler will automatically deduce the types (from C++17).
+
+- by using g++ -std=c++17 main.cpp - we can also use template deduction for std::vector/comntainers
+
+- so we can use std::vector v1 = {1,2,3} unstead of std::vector<int> v1={1,2,3} 
+
+#include <assert.h>
+
+// TODO: Declare a generic, templatized average function
+
+template<typename T>
+T average(T a, T b)
+{
+    return (a + b)/2;
+}
+
+int main() { assert(average(2.0,5.0) == 3.5); }
+
+
+17. Templates: generic programming:
+-------------
+- templates as a tool to use the same code for different types
+
+We use the keyword template to specify which function is generic. Generic code is the term for code that is independent of types. It is mandatory to put the template<> tag before the function signature, to specify and mark that the declaration is generic.
+
+Besides template, the keyword typename (or, alternatively, class) specifies the generic type in the function prototype. The parameters that follow typename (or class) represent generic types in the function declaration.
+
+In order to instantiate a templatized class, use a templatized constructor, for example: Sum<double>(20.0, 13.7). You might recognize this form as the same form used to construct a vector. That's because vectors are indeed a generic class!
+
+#include <assert.h>
+
+// TODO: Create a generic function Product that multiplies two parameters
+template<typename T>
+T Product(T number1, T number2)
+{
+    return(number1*number2);
+}
+
+int main() { 
+  assert(Product<int>(10, 2) == 20); 
+
+
+}
+
+once we paramatrize types, we need to paramatrize algorithms
+- with templates we manipulate things at compile time
+d
+- but we can't specify exactly what are the requirements for the generic  types, this will change in c++20 with "concepts"
+
+- 
