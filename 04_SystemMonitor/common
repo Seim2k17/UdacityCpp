@@ -1,12 +1,46 @@
 Concepts
 #########
 
+16. Project:
+to complete the udacity project one must fullfill the criterias from here:
+  https://review.udacity.com/#!/rubrics/3619/view
+
+Suggestions to Make Your Project Stand Out!
+Calculate CPU utilization dynamically, based on recent utilization
+Sort processes based on CPU or memory utilization
+Make the display interactive
+Restructure the program to use abstract classes (interfaces) and pure virtual functions
+Port the program to another operating system
+
 13. process data
 
 - data about individual processes are within /proc - folder. each process has its own folder and it called after the PID of the process
 - parsing in c++ is a bit tricky -> starter code
 - the UID (User identifier) of a process can be found under /proc/[PID]/status
 - then the username for the UID can be found in /etc/passwd (except LDAP user ...)
+- processor utilization of a process is also stored in the /proc/[PID]/stat file
+  - more infos: https://man7.org/linux/man-pages/man5/proc.5.html
+                https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+- /proc/uptime has two values (in seconds)
+  e.g.-  2304.78 22875.72
+  -> #1: total uptime in seconds, #2: how much in seconds of that time the system has spend in idle mode
+  -> on multicore systems the #2 number is the sum of all cores-idle time
+
+- /proc/cpuinfo contains infos about the cpu
+  -> cpu-core: Anzahl der Cores pro CPU, Hyperthreading wird hierbei nicht mitgezählt
+  -> siblings: Anzahl der parallel arbeitenden Einheiten, Ohne Hyperthreading: Siblings = Anzahl der Cores pro CPU
+                                                          Mit Hyperthreading: Siblings = 2 * Anzahl der Cores pro CPU
+  --> https://linuxwiki.de/proc/cpuinfo
+
+  - Command
+  Linux stores the command used to launch the function in the /proc/[pid]/cmdline file.
+
+StartTime of a process
+- /proc/[PID]/stat #22 described the starttime of the process in "clock-ticks"
+-> to convert in seconds in cpp: 
+    #include <unistd.h>
+    divide the "clock ticks" value by sysconf(_SC_CLK_TCK)
+    Once you have converted the time value to seconds, you can use the Format::Time() function from the project starter code to display the seconds in a "HH:MM:SS" format.
 
 11. processor data
 
