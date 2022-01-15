@@ -59,6 +59,7 @@ vector<int> LinuxParser::Pids() {
       // Is every character of the name a digit?
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
+        parseProcessFolder(filename);
         int pid = stoi(filename);
         pids.push_back(pid);
       }
@@ -71,7 +72,7 @@ vector<int> LinuxParser::Pids() {
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() { return 0.0; }
 
-// TODO: Read and return the system uptime
+// DONE: Read and return the system uptime
 long LinuxParser::UpTime() 
 { 
   string uptime, idle;
@@ -82,9 +83,6 @@ long LinuxParser::UpTime()
     std::istringstream linestream(line);
     linestream >> uptime >> idle;
   }
-  //std::cout << "Uptime(s)" << uptime << std::endl;
-  long test = std::atol(uptime.c_str());
-  std::cout << test << std::endl;
   return std::atol(uptime.c_str()); 
 }
 
@@ -110,8 +108,27 @@ int LinuxParser::TotalProcesses()
   return LinuxParser::Pids().size(); 
 }
 
-// TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+// DONE: Read and return the number of running processes
+int LinuxParser::RunningProcesses() 
+{ 
+  string line, topic, running;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      linestream >> topic >> running;
+      if (topic == "procs_running") {
+        return std::atoi(running.c_str());
+      }
+    }
+  }
+  return 0;
+}
+
+void LinuxParser::parseProcessFolder(std::string filename)
+{
+
+}
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
