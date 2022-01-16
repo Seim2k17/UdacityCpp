@@ -17,7 +17,15 @@ class ProcessDetails {
   void Command(std::string command);              
   void CpuUtilization(std::string cpu_util);            
   void Ram(std::string ram_util);                 
-  void UpTime(std::string uptime);                   
+  void UpTime(std::string uptime);
+
+  int Pid();
+  std::string User();                    
+  std::string UserId();
+  std::string Command();              
+  std::string CpuUtilization();            
+  std::string Ram();                 
+  std::string UpTime();                   
   //bool operator<(Process const& a) const;  // TODO: See src/process.cpp
  
  private:

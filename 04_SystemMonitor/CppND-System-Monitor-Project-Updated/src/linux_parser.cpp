@@ -135,7 +135,7 @@ ProcessDetails LinuxParser::parseProcess(int pid)
   std::string cpuUsage = LinuxParser::CpuUtilization(pid);
   std::string processUptime = LinuxParser::UpTime(pid);
 
-  ProcessDetails details(pid);
+  ProcessDetails details{pid};
   details.Command(processCommand);
   details.Ram(processram);
   details.UserId(processUid);

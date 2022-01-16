@@ -38,3 +38,38 @@ void ProcessDetails::UpTime(std::string uptime)
 {
     m_uptime = uptime;
 }
+
+int ProcessDetails::Pid()
+{
+    return m_pid;
+}
+  
+std::string ProcessDetails::User()
+{
+    return m_user;
+}
+
+std::string ProcessDetails::UserId()
+{
+    return m_userId;
+}
+
+std::string ProcessDetails::Command()
+{
+    return m_command;
+}
+
+std::string ProcessDetails::CpuUtilization()
+{
+    return m_cpu_utilization;
+}
+
+std::string ProcessDetails::Ram()
+{
+    return m_ram_utilization;
+}
+
+std::string ProcessDetails::UpTime()
+{
+    return m_uptime;
+}
