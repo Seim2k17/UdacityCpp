@@ -1,4 +1,5 @@
 #include "linux_parser.h"
+#include "process_details.h"
 
 #include <dirent.h>
 #include <unistd.h>
@@ -59,7 +60,6 @@ vector<int> LinuxParser::Pids() {
       // Is every character of the name a digit?
       string filename(file->d_name);
       if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        parseProcessFolder(filename);
         int pid = stoi(filename);
         pids.push_back(pid);
       }
@@ -125,10 +125,29 @@ int LinuxParser::RunningProcesses()
   return 0;
 }
 
-void LinuxParser::parseProcessFolder(std::string filename)
-{
 
+ProcessDetails LinuxParser::parseProcess(int pid)
+{
+  std::string processCommand = LinuxParser::Command(pid);
+  std::string processram = LinuxParser::Ram(pid);
+  std::string processUid = LinuxParser::Uid(pid);
+  std::string processUser = LinuxParser::User(pid);
+  std::string cpuUsage = LinuxParser::CpuUtilization(pid);
+  std::string processUptime = LinuxParser::UpTime(pid);
+
+  ProcessDetails details(pid);
+  details.Command(processCommand);
+  details.Ram(processram);
+  details.UserId(processUid);
+  details.User(processUser);
+  details.UpTime(processUptime);
+  details.CpuUtilization(cpuUsage);
+
+  return details;
 }
+
+
+string LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { return string(); } 
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -148,4 +167,4 @@ string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+std::string LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }

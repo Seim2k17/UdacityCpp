@@ -1,11 +1,14 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "process_details.h"
 #include <string>
 /*
 Basic class for Process representation
 It contains relevant attributes as shown below
 */
+class ProcessDetails;
+
 class Process {
  public:
   int Pid();                               // TODO: See src/process.cpp
@@ -16,8 +19,10 @@ class Process {
   long int UpTime();                       // TODO: See src/process.cpp
   bool operator<(Process const& a) const;  // TODO: See src/process.cpp
 
-  // TODO: Declare any necessary private members
+  // DONE: Declare any necessary private members
  private:
+    ProcessDetails* details;
+
 };
 
 #endif
