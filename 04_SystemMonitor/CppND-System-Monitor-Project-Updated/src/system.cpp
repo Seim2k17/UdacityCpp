@@ -3,6 +3,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "process.h"
 #include "processor.h"
@@ -20,9 +21,20 @@ Processor& System::Cpu()
     return cpu_; 
 }
 
+ void System::createProcess(int pid)
+ {
+    auto compare = [pid](Process p){ return p.Pid() == pid; }; 
+    if (std::find_if(processes_.begin(), processes_.end(), compare) == processes_.end())
+    {
+        Process p(pid);
+        processes_.push_back(p);
+    }
+ }
+
+
 // TODO: Return a container composed of the system's processes
 vector<Process>& System::Processes() 
-{ 
+{
     return processes_; 
 }
 

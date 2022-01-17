@@ -138,7 +138,7 @@ ProcessDetails LinuxParser::parseProcess(int pid)
   ProcessDetails details{pid};
   details.Command(processCommand);
   details.Ram(processram);
-  details.UserId(processUid);
+  details.UserId(processUid);  
   details.User(processUser);
   details.UpTime(processUptime);
   details.CpuUtilization(cpuUsage);
@@ -147,11 +147,11 @@ ProcessDetails LinuxParser::parseProcess(int pid)
 }
 
 
-string LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { return string(); } 
+string LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { return string("0.4542"); } 
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid [[maybe_unused]]) { return string("HELLOWORLD"); }
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -167,4 +167,4 @@ string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-std::string LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+std::string LinuxParser::UpTime(int pid [[maybe_unused]]) { return string("00:00:00"); }

@@ -1,7 +1,6 @@
 #ifndef PROCESS_DETAILS_H
 #define PROCESS_DETAILS_H
 
-#include "process.h"
 #include <string>
 /*
 Basic class for Process Details representation

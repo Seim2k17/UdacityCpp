@@ -20,6 +20,8 @@ class System {
   std::string OperatingSystem();      // TODO: See src/system.cpp
  
   // TODO: Define any necessary private members
+ protected:
+  void createProcess(int pid);
  private:
   Processor cpu_ = {};
   std::vector<Process> processes_ = {};
