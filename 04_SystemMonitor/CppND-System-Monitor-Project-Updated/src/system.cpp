@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <iostream>
 
 #include "process.h"
 #include "processor.h"
@@ -21,20 +22,33 @@ Processor& System::Cpu()
     return cpu_; 
 }
 
- void System::createProcess(int pid)
- {
+void System::createProcess(int pid)
+{
     auto compare = [pid](Process p){ return p.Pid() == pid; }; 
     if (std::find_if(processes_.begin(), processes_.end(), compare) == processes_.end())
     {
         Process p(pid);
         processes_.push_back(p);
     }
- }
+}
 
+bool sortProcessesDescendingCpu (Process p1,Process p2) { return (p1.Pid() > p2.Pid()); }
 
 // TODO: Return a container composed of the system's processes
 vector<Process>& System::Processes() 
 {
+    std::vector<int> pids = LinuxParser::Pids();
+
+    processes_.clear();
+    
+    for(const int pid : pids)
+    {
+        createProcess(pid);
+        //processes_.push_back
+    }
+
+    std::sort (processes_.begin(), processes_.end(), sortProcessesDescendingCpu);
+
     return processes_; 
 }
 
@@ -45,7 +59,7 @@ std::string System::Kernel()
 }
 
 // TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.1; }
+float System::MemoryUtilization() { return processes_.size(); }
 
 // DONE: Return the operating system name
 std::string System::OperatingSystem() 
