@@ -29,6 +29,7 @@ void System::createProcess(int pid)
     {
         Process p(pid);
         processes_.push_back(p);
+        return;
     }
 }
 

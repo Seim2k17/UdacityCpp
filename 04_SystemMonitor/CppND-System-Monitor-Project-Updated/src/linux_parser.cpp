@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <filesystem>
 
 using std::stof;
 using std::string;
@@ -128,11 +129,50 @@ int LinuxParser::RunningProcesses()
 
 ProcessDetails LinuxParser::parseProcess(int pid)
 {
+  // only open and parse the pid/stat - file once
+  std::vector<std::string> pTimeCnt;
+  string time, line;
+  std::ifstream filestream(kProcDirectory + std::to_string(pid)+ kStatFilename);
+  if (filestream.is_open()) 
+  {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      // get stuff into a iteratable thing
+      while(linestream >> time)
+      {
+        pTimeCnt.push_back(time);
+      }
+      
+      /*
+      for(int i=1;i<14;i++)
+      {
+        linestream >> ignore;
+      }
+      linestream >> utime >> stime >> cutime >> cstime;
+      for(int j=1;j<5;j++)
+      {
+        linestream >> ignore;
+      }
+      linestream >> starttime;
+      */
+      }
+      
+      //std::cout << "usertime: " << utime << ", stime: " << stime << ", cutime: " << cutime << ", cstime: " << cstime << ", start-time: " << starttime;
+  }
+
+/*
+  pTimeCnt.push_back(utime);
+  pTimeCnt.push_back(stime);
+  pTimeCnt.push_back(cutime);
+  pTimeCnt.push_back(cstime);
+  pTimeCnt.push_back(starttime);
+*/
+
   std::string processCommand = LinuxParser::Command(pid);
   std::string processram = LinuxParser::Ram(pid);
   std::string processUid = LinuxParser::Uid(pid);
   std::string processUser = LinuxParser::User(pid);
-  std::string cpuUsage = LinuxParser::CpuUtilization(pid);
+  std::string cpuUsage = LinuxParser::CpuUtilization(pTimeCnt);
   std::string processUptime = LinuxParser::UpTime(pid);
 
   ProcessDetails details{pid};
@@ -147,7 +187,18 @@ ProcessDetails LinuxParser::parseProcess(int pid)
 }
 
 
-string LinuxParser::CpuUtilization(int pid [[maybe_unused]]) { return string("0.4542"); } 
+string LinuxParser::CpuUtilization(std::vector<std::string> pTimes) 
+{ 
+  // fancy calculations from here: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+  std::string utime, stime, cutime, cstime, starttime;
+  std::string out = string();
+  if(pTimes.size() > 0)
+  {
+    out = pTimes.at(13);//+pTimes.at(0)+pTimes.at(0)+pTimes.at(0)+pTimes.at(0)+pTimes.at(0);
+  }
+  
+  return string(out); 
+} 
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
