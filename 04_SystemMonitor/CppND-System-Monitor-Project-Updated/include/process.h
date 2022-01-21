@@ -1,8 +1,9 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#include "process_details.h"
 #include <string>
+
+#include "process_details.h"
 /*
 Basic class for Process representation
 It contains relevant attributes as shown below
@@ -21,7 +22,7 @@ class Process {
 
   // DONE: Declare any necessary private members
  private:
-    ProcessDetails details;
+  ProcessDetails details;
 };
 
 #endif
