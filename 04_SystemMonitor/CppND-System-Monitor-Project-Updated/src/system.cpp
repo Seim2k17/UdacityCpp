@@ -40,6 +40,7 @@ vector<Process>& System::Processes() {
   std::vector<int> pids = LinuxParser::Pids();
 
   processes_.clear();
+  std::cout << "cpcty " << processes_.capacity();
 
   for (const int pid : pids) {
     createProcess(pid);
