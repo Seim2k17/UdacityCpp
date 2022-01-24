@@ -169,7 +169,7 @@ ProcessDetails LinuxParser::parseProcess(int pid) {
   std::string processUid = LinuxParser::Uid(pid);
   std::string processUser = LinuxParser::User(pid);
   std::string cpuUsage = LinuxParser::CpuUtilization(pTimeCnt);
-  std::string processUptime = LinuxParser::UpTime(pTimeCnt);
+  std::string processUptime = Format::ElapsedTime(LinuxParser::UpTime(pTimeCnt));
 
   ProcessDetails details{pid};
   details.Command(processCommand);
@@ -198,10 +198,8 @@ string LinuxParser::CpuUtilization(std::vector<std::string>& pTimes) {
     }
     auto clock = sysconf(_SC_CLK_TCK);
 
-    long upTime = LinuxParser::UpTime();
-    int timeInSec = upTime - (std::stoi(pTimes.at(21)) / clock);
-    float usage =
-        ((totalTime / clock) / timeInSec);  // * 100; --> * 100 is wrong ?
+    int timeInSec = LinuxParser::UpTime(pTimes); //upTime - (std::stoi(pTimes.at(21)) / clock);
+    float usage = ((totalTime / clock) / timeInSec) * 100;
 
     out = std::to_string(usage);
   }
@@ -234,16 +232,17 @@ string LinuxParser::Uid(int pid [[maybe_unused]]) { return string(); }
 // REMOVE: [[maybe_unused]] once you define the function
 string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
 
-// TODO: Read and return the uptime of a process
+// DONE: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-std::string LinuxParser::UpTime(std::vector<std::string>& pTimes) {
+long LinuxParser::UpTime(std::vector<std::string>& pTimes) {
 
-  long upTime = 0;
+if (pTimes.size() > 0) {
+  long upTime = LinuxParser::UpTime();
+  auto clock = sysconf(_SC_CLK_TCK);
+
+  long timeInsSecs = (upTime - (std::stoi(pTimes.at(21)) / clock))*100;
+  return timeInsSecs;
+}
   
-  if(pTimes.size() > 0)
-  {
-    upTime = std::stol(pTimes.at(21));
-  }
-  
-  return Format::ElapsedTime(upTime);
+  return 0;
 }
