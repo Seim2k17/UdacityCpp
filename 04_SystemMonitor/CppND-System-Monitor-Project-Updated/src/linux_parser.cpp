@@ -236,9 +236,10 @@ string LinuxParser::Uid(int pid)
     while (std::getline(stream, line)) {
       std::istringstream linestream(line);
       linestream >> topic;
-      if(topic=="Uid:")
+      if(topic == "Uid:")
       {
         linestream >> uid;
+        break;
       }
       else
       {
@@ -257,6 +258,7 @@ string LinuxParser::User(int pid [[maybe_unused]])
   //std::string uid{"65534"};
   string line, user, token;
   string skip;
+  bool userSet = false;
   std::ifstream pwdStream("/etc/passwd");
   
   if (pwdStream.is_open()) {
@@ -264,8 +266,16 @@ string LinuxParser::User(int pid [[maybe_unused]])
       
       std::istringstream linestream(line);
       // TODO: line splitten an ":"
+      
       while(std::getline(linestream,token,':'))
       {
+        // user == first part of the line
+        if(!userSet)
+        {
+          user = token;
+          userSet=true;
+        }
+        
         if(token==uid)
         {
           return user;
