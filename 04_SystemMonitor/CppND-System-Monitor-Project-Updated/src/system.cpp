@@ -26,13 +26,19 @@ void System::createProcess(int pid) {
   if (std::find_if(processes_.begin(), processes_.end(), compare) ==
       processes_.end()) {
     Process p(pid);
-    processes_.push_back(p);
+    // some processes don't have the VmSize-column in /proc/[pid]/status -file
+    if(p.Ram() != "N/A")
+    {
+      processes_.push_back(p);
+    }
+    
     return;
   }
 }
 
 bool sortProcessesDescendingCpu(Process p1, Process p2) {
   return (p1.CpuUtilization() > p2.CpuUtilization());
+  //return (p1 < p2);
 }
 
 // DONE: Return a container composed of the system's processes
@@ -40,8 +46,7 @@ vector<Process>& System::Processes() {
   std::vector<int> pids = LinuxParser::Pids();
 
   processes_.clear();
-  std::cout << "cpcty " << processes_.capacity();
-
+  
   for (const int pid : pids) {
     createProcess(pid);
   }
@@ -53,9 +58,10 @@ vector<Process>& System::Processes() {
 // DONE: Return the system's kernel identifier (string)
 std::string System::Kernel() { return LinuxParser::Kernel(); }
 
-// TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return (float)0.5; }  // processes_.size();
-                                                          // }
+// DONE: Return the system's memory utilization
+float System::MemoryUtilization() { 
+  return LinuxParser::MemoryUtilization(); 
+} 
 
 // DONE: Return the operating system name
 std::string System::OperatingSystem() { return LinuxParser::OperatingSystem(); }

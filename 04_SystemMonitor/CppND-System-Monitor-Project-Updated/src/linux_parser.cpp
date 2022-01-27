@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
@@ -73,8 +74,31 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+// DONE: Read and return the system memory utilization
+float LinuxParser::MemoryUtilization() 
+{ 
+  string line, topic, memory;
+  double memTotal,memAvailable;
+  
+  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {
+      std::istringstream linestream(line);
+      linestream >> topic >> memory;
+      if (topic == "MemTotal:") {
+        memTotal = std::atof(memory.c_str());
+      }
+      if (topic == "MemAvailable:") {
+        memAvailable = std::atof(memory.c_str());
+      }
+    }
+  }
+  if(memAvailable != 0.0 && memTotal != 0.0)
+  {
+    return (memAvailable / memTotal); 
+  }
+  return 0.0;
+}
 
 // DONE: Read and return the system uptime
 long LinuxParser::UpTime() {
@@ -137,32 +161,8 @@ ProcessDetails LinuxParser::parseProcess(int pid) {
       while (linestream >> time) {
         pTimeCnt.push_back(time);
       }
-
-      /*
-      for(int i=1;i<14;i++)
-      {
-        linestream >> ignore;
-      }
-      linestream >> utime >> stime >> cutime >> cstime;
-      for(int j=1;j<5;j++)
-      {
-        linestream >> ignore;
-      }
-      linestream >> starttime;
-      */
     }
-
-    // std::cout << "usertime: " << utime << ", stime: " << stime << ", cutime:
-    // " << cutime << ", cstime: " << cstime << ", start-time: " << starttime;
   }
-
-  /*
-    pTimeCnt.push_back(utime);
-    pTimeCnt.push_back(stime);
-    pTimeCnt.push_back(cutime);
-    pTimeCnt.push_back(cstime);
-    pTimeCnt.push_back(starttime);
-  */
 
   std::string processCommand = LinuxParser::Command(pid);
   std::string processram = LinuxParser::Ram(pid);
@@ -189,8 +189,7 @@ string LinuxParser::CpuUtilization(std::vector<std::string>& pTimes) {
   std::string out = string("0.00");
 
   if (pTimes.size() > 0) {
-    // float totalTime = std::stoi(pTimes.at(13)) + std::stoi(pTimes.at(14)) +
-    // std::stoi(pTimes.at(15))+ std::stoi(pTimes.at(16));
+    // float totalTime = std::stoi(pTimes.at(13)) + std::stoi(pTimes.at(14)) + std::stoi(pTimes.at(15))+ std::stoi(pTimes.at(16));
     float totalTime = std::stoi(pTimes.at(13)) + std::stoi(pTimes.at(14));
 
     if (totalTime == 0.00) {
@@ -219,10 +218,46 @@ string LinuxParser::Command(int pid) {
   }
   return command.c_str();
 }
+// check if a string is a integer number
+auto isNumber = [](std::string s){
+    return s.find_first_not_of("012345678") == std::string::npos;
+};
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+string LinuxParser::Ram(int pid) 
+{ 
+
+  string ram;
+  string line, topic;
+  string skip;
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatusFilename);
+
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      linestream >> topic;
+      if(topic == "VmSize:")
+      {
+        linestream >> ram;
+        break;
+      }
+      else
+      {
+        linestream >> skip;
+      }
+    }
+  }
+  
+  if(isNumber(ram))
+  {
+    return "N/A";
+  }
+
+  auto i = std::stoi(ram)/1024;
+  stream.close();
+  return std::to_string(i); 
+}
 
 // DONE: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -250,9 +285,9 @@ string LinuxParser::Uid(int pid)
   return uid.c_str();
 }
 
-// TODO: Read and return the user associated with a process
+// DONE: Read and return the user associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid [[maybe_unused]]) 
+string LinuxParser::User(int pid) 
 { 
   std::string uid = LinuxParser::Uid(pid);
   //std::string uid{"65534"};
@@ -265,11 +300,8 @@ string LinuxParser::User(int pid [[maybe_unused]])
     while (std::getline(pwdStream, line)) {
       
       std::istringstream linestream(line);
-      // TODO: line splitten an ":"
-      
       while(std::getline(linestream,token,':'))
       {
-        // user == first part of the line
         if(!userSet)
         {
           user = token;
@@ -283,8 +315,8 @@ string LinuxParser::User(int pid [[maybe_unused]])
       }
     }
   }
-
-  return string("unknown"); 
+  // some systems use other login methods like ldap - atm i don't know how to get these infos
+  return string("N/A"); 
 }
 
 // DONE: Read and return the uptime of a process
@@ -295,7 +327,7 @@ if (pTimes.size() > 0) {
   long upTime = LinuxParser::UpTime();
   auto clock = sysconf(_SC_CLK_TCK);
 
-  long timeInsSecs = (upTime - (std::stoi(pTimes.at(21)) / clock))*100;
+  long timeInsSecs = (upTime - std::stoi(pTimes.at(21)) / clock)*100;
   return timeInsSecs;
 }
   
