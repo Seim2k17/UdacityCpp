@@ -52,6 +52,21 @@ cpu1 513292 71696 106910 2601103 115444 0 1753 0 0 0
 -> first line aggregates all the other cpus
 
 - from left to right:
+/*
+user(1): normal processes executing in user mode
+nice(2): niced processes executing in user mode
+system(3): processes executing in kernel mode
+idle(4): twiddling thumbs
+iowait(5): In a word, iowait stands for waiting for I/O to complete. But there are several problems:
+        Cpu will not wait for I/O to complete, iowait is the time that a task is waiting for I/O to complete. When cpu goes into idle state for outstanding task io, another task will be scheduled on this CPU.
+        In a multi-core CPU, the task waiting for I/O to complete is not running on any CPU, so the iowait of each CPU is difficult to calculate.
+        The value of iowait field in /proc/stat will decrease in certain conditions. So, the iowait is not reliable by reading from /proc/stat.
+irq(6): servicing interrupts
+softirq(7): servicing softirqs
+steal(8): involuntary wait
+guest(9): running a normal guest
+guest_nice(10): running a niced guest
+*/
 user: normal processes executing in user mode
 nice: niced processes executing in user mode
 system: processes executing in kernel mode

@@ -18,7 +18,7 @@ using std::size_t;
 using std::string;
 using std::vector;
 
-// TODO: Return the system's CPU
+// REFINE: Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
 
 void System::createProcess(int pid) {
@@ -37,6 +37,7 @@ void System::createProcess(int pid) {
 }
 
 bool sortProcessesDescendingCpu(Process p1, Process p2) {
+  //return (p1.User() < p2.User());
   return (p1.CpuUtilization() > p2.CpuUtilization());
   //return (p1 < p2);
 }

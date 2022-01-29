@@ -313,6 +313,7 @@ string LinuxParser::User(int pid)
     while (std::getline(pwdStream, line)) {
       
       std::istringstream linestream(line);
+      userSet = false;
       while(std::getline(linestream,token,':'))
       {
         if(!userSet)

@@ -9,8 +9,8 @@ class Processor {
   // TODO: Declare any necessary private members
  private:
   long prevUser, prevNice, prevSystem, prevIrq, prevSoftIrq, prevSteal, prevIowait;
-  long user, nice, system, irq, softIrq, steal;
-  long prevIdle, idle, prevNonIdle, nonIdle, prevTotal, total, totalDelta, idleDelta;
+  long user, nice, system, irq, softIrq, steal, iowait,guest, guestNice;
+  long prevIdle, idle, prevNonIdle, nonIdle, prevTotal, total;
   float cpuPercentage;
 };
 
