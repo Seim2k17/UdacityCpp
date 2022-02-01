@@ -29,7 +29,7 @@ void System::createProcess(int pid) {
     // some processes don't have the VmSize-column in /proc/[pid]/status -file
     if(p.Ram() != "N/A")
     {
-      processes_.push_back(p);
+      processes_.emplace_back(p);
     }
     
     return;

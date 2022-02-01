@@ -113,19 +113,6 @@ long LinuxParser::UpTime() {
   return std::atol(uptime.c_str());
 }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
-
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
 // DONE: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { 
   // simple implementattion: we only read the first line, it contains aggregate CPU-information
@@ -136,7 +123,8 @@ vector<string> LinuxParser::CpuUtilization() {
     std::getline(filestream, line);
     std::istringstream linestream(line);
       while (linestream >> value) {
-        cpuValues.push_back(value);
+        // emplpace_back is cheaper and calls constructor inplace while push_back move/copied the value
+        cpuValues.emplace_back(value);
       }
   }
   return cpuValues; 
@@ -250,7 +238,8 @@ string LinuxParser::Ram(int pid)
     while (std::getline(stream, line)) {
       std::istringstream linestream(line);
       linestream >> topic;
-      if(topic == "VmSize:")
+      // VmSize gives us VirtualMemory which is most probably more than the physical so i use VmRSS instead
+      if(topic == "VmRSS:")
       {
         linestream >> ram;
         break;
@@ -341,7 +330,7 @@ if (pTimes.size() > 0) {
   long upTime = LinuxParser::UpTime();
   auto clock = sysconf(_SC_CLK_TCK);
 
-  long timeInsSecs = (upTime - std::stoi(pTimes.at(21)) / clock)*100;
+  long timeInsSecs = (upTime - std::stoi(pTimes.at(21)) / clock);//*100;
   return timeInsSecs;
 }
   
