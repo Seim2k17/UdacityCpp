@@ -170,7 +170,7 @@ ProcessDetails LinuxParser::parseProcess(int pid) {
   std::string processUid = LinuxParser::Uid(pid);
   std::string processUser = LinuxParser::User(pid);
   std::string cpuUsage = LinuxParser::CpuUtilization(pTimeCnt);
-  std::string processUptime = Format::ElapsedTime(LinuxParser::UpTime(pTimeCnt));
+  std::string processUptime = std::to_string(LinuxParser::UpTime(pTimeCnt));
 
   ProcessDetails details{pid};
   details.Command(processCommand);
