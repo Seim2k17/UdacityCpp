@@ -1,3 +1,77 @@
+Review:
+########
+
+- Debugging Gems
+--> try !
+
+#include <iostream>
+#include <string>
+
+#define printVariableNameAndValue(x) cout<<"The name of variable **"<<(#x)<<"** and the value of variable is => "<<x<<"\n"
+// I am talking about this piece of code ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+using namespace std;
+
+
+int main(){
+    int n = 25;
+    string myFirstStringEver = "Hello World";
+
+    printVariableNameAndValue(n);
+    printVariableNameAndValue(myFirstStringEver);
+
+}
+
+Comments Gems:
+- https://visualstudiomagazine.com/Kunk0211
+
+- Chapter on COmments from the Book: Clean Code
+  In his book Clean Code, advocates using comments for the following purposes:
+1.Explanation of Intent
+2.Clarification
+3.Warnings
+4.Amplification
+5.ToDo
+At a minimum, comments should describe what each public member does and how to use it, and explain all parameters and return values with acceptable ranges (e.g. between 1 and 1000) for each."
+
+
+- live / similar project: https://github.com/hishamhm/htop
+
+more Ressources:
+
+https://www.learncpp.com/
+https://www.geeksforgeeks.org/object-oriented-programming-in-cpp/
+https://www.youtube.com/watch?v=ZOKLjJF54Xc
+https://www.roberthalf.com/blog/salaries-and-skills/4-advantages-of-object-oriented-programming
+https://www.geeksforgeeks.org/differences-between-procedural-and-object-oriented-programming/
+https://www.youtube.com/playlist?list=PLqCJpWy5FohcehaXlCIt8sVBHBFFRVWsx (GameDev Beginner with DirectX) :D !
+https://www.youtube.com/watch?v=-DP1i2ZU9gk (MIT OpenCourseWare, Python)
+https://www.youtube.com/watch?v=xXXt3htgDok&list=PLrOv9FMX8xJE8NgepZR1etrsU63fDDGxO&index=19 (RPG, Code-It-Yourself!)
+https://www.youtube.com/watch?v=kxKKHKSMGIg&t=651s (Polymorphism)
+https://www.youtube.com/watch?v=iChalAKXffs (on Pointers)
+https://www.youtube.com/watch?v=32tDTD9UJCE (CppCon 2019)
+https://classroom.udacity.com/courses/ud206 (Shell Workshop)
+https://guide.bash.academy/ (Bash Guide)
+https://www.cs.swarthmore.edu/~newhall/unixhelp/howto_makefiles.html (How to write makefiles)
+https://invisible-island.net/ncurses/ncurses-intro.html 
+https://medium.com/heuristics/c-application-development-part-1-project-structure-454b00f9eddc
+https://atomicobject.com/resources/oo-programming/oo-class-relationships 
+https://www.tecmint.com/linux-process-management/ 
+
+https://www.youtube.com/watch?v=uwv1uvi1OTU (C++ weekly)
+
+Compiler links:
+https://www.learncpp.com/cpp-tutorial/configuring-your-compiler-warning-and-error-levels/
+https://pvs-studio.com/en/blog/posts/k0048/
+https://github.com/boostorg/boost/wiki/
+https://www.intel.com/content/www/us/en/developer/overview.html#gs.oa4729
+
+
+
+
+
+
+
 Concepts
 #########
 
