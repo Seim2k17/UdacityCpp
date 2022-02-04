@@ -1,7 +1,122 @@
 
+4.1 Heap
+
+- flexible and "dangerous" ressource
+- dynamic memory right above the BSS / Data Segment
+- it grows upwards while stack grows downwards (acc to memory adresses)
+- stack automatically grows and shrinks with each function call and local variable. as soon the scope is left it deallocates mem automatically
+--> not so with the heap
+- programmer allocae memory with "malloc" or "new" and it will remain until deallocation (free / delete)
+- many problems acc. to memory fragmentation
+
+
 3.4. Call-by-value vs. call-by-reference
 
+When calling a function as in the previous code example, its parameters (in this case myInt) are used to create local copies of the information provided by the caller. The caller is not sharing the parameter with the function but instead a proprietary copy is created using the assignment operator = (more about that later). When passing parameters in such a way, it is ensured that changes made to the local copy will not affect the original on the caller side. The upside to this is that inner workings of the function and the data owned by the caller are kept neatly separate.
+
+However, there are two major downsides to this:
+
+Passing parameters by value means that a copy is created, which is an expensive operation that might consume large amounts of memory, depending on the data that is being transferred. Later in this course we will encounter "move semantics", which is an effective way to compensate for this downside.
+Passing by value also means that the created copy can not be used as a back channel for communicating with the caller, for example by directly writing the desired information into the variable.
+Consider the example on the right in the pass_by_value.cpp file. In main, the integer val is initialized with 0. When passing it to the function AddTwo, a local copy of val is created, which only exists within the scope of AddTwo, so the add-operation has no effect on val on the caller side. So when main returns, val has a value of 2 instead of 4.
+
+
+However, with a slight modification, we can easily create a backchannel to the caller side. Consider the code on the right.
+
+In this case, when passing the parameter to the function AddThree, we are creating a local copy as well but note that we are now passing a pointer variable. This means that a copy of the memory address of val is created, which we can then use to directly modify its content by using the dereference operator *.
+
+
+void AddThree(int *val)
+{
+    *val += 3;
+}
+
+int main()
+{
+    int val = 0;
+    AddThree(&val);
+    val += 2;
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+
+Passing Variables by Reference
+The second major way of passing parameters to a function is by reference. With this way, the function receives a reference to the parameter, rather than a copy of its value. As with the example of AddThree above, the function can now modify the argument such that the changes also happen on the caller side. In addition to the possibility to directly exchange information between function and caller, passing variables by reference is also faster as no information needs to be copied, as well as more memory-efficient.
+
+A major disadvantage is that the caller does not always know what will happen to the data it passes to a function (especially when the function code can not be modified easily). Thus, in some cases, special steps must be taken to protect ones data from inappropriate modification.
+
+Let us now look at an example of passing a variable by reference, shown below.
+
+#include <iostream>
+
+void AddFour(int &val)
+{
+    val += 4;
+}
+
+int main()
+{
+    int val = 0;
+    AddFour(val);
+    val += 2;
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+
+To pass a variable by reference, we simply declare the function parameters as references using & rather than as normal variables. When the function is called, val will become a reference to the argument. Since a reference to a variable is treated exactly the same as the variable itself, any changes made to the reference are passed through to the argument!
+
+Pointers vs. References
+As we have seen in the examples above, the use of pointers and references to directly manipulate function arguments in a memory-effective way is very similar. Let us compare the two methods in the code on the right.
+
+
+void AddFour(int &val)
+{
+    val += 4;
+}
+
+void AddSix(int *val)
+{
+    *val += 6; 
+}
+
+int main()
+{
+    int val = 0;
+    AddFour(val);
+    AddSix(&val);
+
+    std::cout << "val = " << val << std::endl;
+ 
+    return 0;
+}
+
+As can be seen, pointer and reference are both implemented by using a memory address. In the case of AddFour the caller does not even realize that val might be modified while with AddSix, the reference to val has to be explicitly written by using &.
+
+If passing by value needs to be avoided, both pointers and references are a way to achieve this. The following selection of properties contrasts the two methods so it will be easier to decide which to use from the perspective of the use-case at hand:
+
+Pointers can be declared without initialization. This means we can pass an uninitialized pointer to a function who then internally performs the initialization for us.
+
+Pointers can be reassigned to another memory block on the heap.
+
+References are usually easier to use (depending on the expertise level of the programmer). Sometimes however, if a third-party function is used without properly looking at the parameter definition, it might go unnoticed that a value has been modified.
+
+As an experiment, you could use the -m32 compiler flag to build a 32 bit version of the program. This yields the following output:
+
+sizeof(n)
+
+size of int: 4
+size of *int: 4
+In order to benefit from call-by-reference, the size of the data type passed to the function has to surpass the size of the pointer on the respective architecture (i.e. 32 bit or 64 bit).
+
 3.3. Automatic Allocation (Stack)
+
+When a thread is created, stack memory is allocated by the operating system as a contiguous block. With each new function call or local variable allocation, the stack pointer is moved until eventually it will reach the bottom of said memory block. Once it exceeds this limit (which is called "stack overflow"), the program will crash. To find out the limit of the computer’s stack memory we can make a recursve call on the stack and generate a stack overflow or in terminal: ulimit -s
+
+
 
 in the available literature on C++, the terms stack and heap are used regularly, even though this is not formally correct: C++ has the free space, storage classes and the storage duration of objects.
 

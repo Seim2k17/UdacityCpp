@@ -1,5 +1,5 @@
 .PHONY: all
-allmain: prog1 prog2 prog3
+allmain: prog1 prog2 prog3 prog4
 
 .PHONY: all
 prog1:
@@ -11,6 +11,9 @@ prog2:
 prog3: 
 	cd build && \
 	g++ -Wall -o stack ../src/03_stack_example.cpp
+prog4:
+	cd build && \
+	g++ -Wall -o valRef ../src/04_call_by_value_ref.cpp
 
 .PHONY: all
 all: format test build
