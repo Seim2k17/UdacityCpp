@@ -1,5 +1,5 @@
 .PHONY: all
-allmain: prog1 prog2 prog3 prog4
+allmain: prog1 prog2 prog3 prog4 prog5 prog6 prog7
 
 .PHONY: all
 prog1:
@@ -14,6 +14,15 @@ prog3:
 prog4:
 	cd build && \
 	g++ -Wall -o valRef ../src/04_call_by_value_ref.cpp
+prog5:
+	cd build && \
+	g++ -g -Wall -o memAlloc ../src/05_alloc_memory.cpp
+prog6:
+	cd build && \
+	g++ -g -Wall -o mallocNew ../src/06_malloc_v_new.cpp
+prog7:
+	cd build && \
+	g++ -g -Wall -o overloadNew ../src/07_overload_new.cpp
 
 .PHONY: all
 all: format test build

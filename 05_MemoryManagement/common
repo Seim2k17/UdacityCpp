@@ -1,4 +1,118 @@
 
+Quiz:
+
+A:
+    // (X) - generates a memory leak
+    int *m = (int*)malloc(sizeof(int)); 
+    m = NULL; 
+
+    // (Y) - uses a dangling pointer
+    int *n = (int*)malloc(sizeof(int)); 
+    free(n);
+    *n = 23;
+
+    // (Z) - uses an uninitialized pointer
+    char *o;
+    *o = 'a'; 
+
+B:
+
+int *f1(void) // problem: local variable / adress will get invalid
+{
+    int x = 10;
+    return (&x);
+}
+
+int *f2(void) // problem:  pointer only exists on the stack and gets out of scoper when function exits
+{
+    int *px;
+    *px = 10;
+    return px;
+}
+
+int *f3(void)  // no prob pointer allocatged on the heap and exists after exitiing the function
+{
+    int *px;
+    px = (int *)malloc(sizeof(int));
+    *px = 10;
+    return px;
+}
+
+4.2. malloc / free
+
+- its not always possible to plan the memory requirements axactly in advance and its inefficient to reserve the maximummemory space just to be safe
+- c/c++ offers the option to reserve memory areas during the program execution / runtime
+-> important that the reserved areas are released at a appropriate time to avoid memory leaks
+--> its one of other challeneges in mem management to find out/locate this appropriate time point
+
+- for examples see 05_alloc_memory.cpp
+
+syntax:
+pointer_name = (cast-type)* malloc(size)
+pointer_name = (cast-type)* calloc(num_elements, size_element)
+
+"malloc" is used to dynamically allocate a single large block of memory with the specified size and returns a pointer of type ##void## which can (and shoulb) be cast into a pointer of any other type
+
+"calloc" is used to dynamically allocate the specofied number of blocks of memory of a specified type, it initialized each block with default value of 0
+-> also returns pointer of void which can be cast into a pointer of any form
+
+-> if space for allocation is insufficient a NULL pointer is returned
+
+- the sizeof command is a convenient way of specifying the amount of memory (in bytes) needed to store a certain data type (int-4bytes, double-8bytes)
+
+- The problem with void pointers is that there is no way of knowing the offset to the end of the allocated memory block. 
+
+- but one should not rely on preinitialization, it depends on datatype and the compiler
+- only a block of memory of size(DATATYPE) bytes is allocated on theheap at program time-> the pointer on the stack then points to this memory location on the heap
+
+- Since arrays and pointers are displayed and processed identically internally, individual blocks of data can also be accessed using array syntax:
+    int *p = (int*)malloc(3*sizeof(int));
+    p[0] = 1; p[1] = 2; p[2] = 3;
+    printf("address=%p, second value=%d\n", p, p[1]);
+
+- but of course we can use malloc / calloc with a proprietary structure which constist of several primitive types
+
+struct MyStruct {
+    int i; 
+    double d; 
+    char a[5];
+};
+
+MyStruct *p = (MyStruct*)calloc(4,sizeof(MyStruct));
+p[0].i = 1; p[0].d = 3.14159; p[0].a[0] = 'a';
+
+Changing the size of memory blocks
+---------------------------------
+
+- by using realloc one can reallocate memory.
+- using malloc is not typesafe (only by casting to the type we need when allocating mmory we assure thats the pointer is of the needed type)
+
+- The size of the memory area reserved with malloc or calloc can be increased or decreased with the realloc function.
+
+- pointer_name = (cast-type*) realloc( (cast-type*)old_memblock, new_size );
+- The data from the old memory area is retained,
+
+- if a new block is smaller than the old block the data is only available until the size of the new block. the rest is not erased but marked as unavailable-> accesing the old data > size(new memoryblock) must be avoided and could cause a segfault
+
+freeing up memory
+----------------
+
+the free function releases the reserved memory area so that it can be used again or made available to other programs.
+#include <stdio.h>
+#include <stdlib.h>
+
+int main()
+{
+    void *p = malloc(100); 
+    free(p);
+
+    return 0;
+}
+
+- if a poniter p2 points to antother pointer p which will be freed the first pointer is called a dangling pointer as soon as free(p) is called
+- also if a pointer variable created on the heap and refers to a allocated memory block and this pointer only exist on a limited scope. as soon as this scope is left the popinter will be lost, but not the heap the memory refers to.
+
+
 4.1 Heap
 
 - flexible and "dangerous" ressource
@@ -8,6 +122,24 @@
 --> not so with the heap
 - programmer allocae memory with "malloc" or "new" and it will remain until deallocation (free / delete)
 - many problems acc. to memory fragmentation
+
+properties:
+- memory can be allocated in an arbitrary scope, without being deleted when the scope is left->as long as the memory adress is returned by a           function the caller can freely use it
+- local variables on the stack are allocated at compile time vs. heap-variables which are allocated at run-time -> e.g. a string variable can be tailored to the actual length of the user-input
+- heap memory is only constrained by the physical memory size (adress space and physical memory)-> but if the programmer forgets to deallocate a block of heap memory a memory leak will start to exist
+- unlike stack the heap is shared among multiple threads -> memory management for the heap needs to tae concurrency into account (several threads might compete for the same memory ressources)
+- when memory on the stack is allocated and deallocated, the stack pointer is simply shifted up or downwards. its sequentual and it can be managed by the OS simply and securely. with heap allocation and deallocation can occur arbitrarily, depending in the lifetime of the variable and can lead to memory fragmentation over time, which is much more difficult and expensive to manage
+
+memory fragmentation
+--------------------
+- e.g ssequentyl allocate memory for variable x&y repeatly
+--> x|y|x|y|x|y|x|y|x|y|x|y|x|y|x|y|x|y|x
+
+then we might decide to delete all y's which lead to empty spaces between all the x's
+--> x|-|x|-|x|-|x|-|x|-|x|-|x|-|x|-|x|-|x
+
+->whe fragmented memory allocation will take longer to find a suitable spcae for a new object
+
 
 
 3.4. Call-by-value vs. call-by-reference

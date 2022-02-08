@@ -1,0 +1,27 @@
+4.4. new/delete
+
+- n/d are operators instead of malloc/free , which are library-functions (default way of allocating/dealloc mem in C)
+- with OOP memory alloc became more complex (c'tor and de'tor need to be called)
+-> new/delete is the malloc/free counterpart for OOP
+- wenn create objects with malloc ctor/dtor aren't called
+- n/d are typesafer than malloc/free (which returns a void pointer and needs to be cast correctly). 
+- with MyObject *p = new MyObject() in C++ it returns the correct type automatically
+
+- but with every new there need to be a delete to avoid memory leaks
+
+- to increase performance we can separate allocation from construction
+-> placement new
+
+void *memory = malloc(sizeof(MyClass));
+MyClass *object = new (memory) MyClass;
+-->
+The syntax new (memory) is denoted as placement new. The difference to the "conventional" new we have been using so far is that that no memory is allocated.
+
+- but no delete equivalent -> 
+object->~MyClass();
+free(memory); 
+Note: that this should never be done outside of placement new
+
+- One of the major advantages of new/delete over free/malloc is the possibility of overloading. 
+
+FIXME: 7/11
