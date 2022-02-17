@@ -1,3 +1,188 @@
+
+5.2. rvalues / lvalues
+
+- to understand this concepts helps to undertsand the lifecycle of objects in memory
+- rvalue references are the key to more efficient programming in c++
+--> all containers from the stl use rvalue refs and movesemantics
+
+- every exression in c++ has a type and belongs to a value category
+- when objects are created, copied or moved during an expression the compiler uses these value expressions to decide which method to call or which operator to use
+
+5.2.1
+- prior to c++11 there are only 2 value categories, now as many as five of them
+                                                        
+                                                        expression
+                                                            |
+                                                    --------------------
+                                                    |                  |
+                                                glvalue             rvalue
+                                                    |                  |
+                                        -----------------------------------------
+                                        |                   |                   |
+                                      lvalue            xvalue               prvalue
+
+- lvalues have an adress that can be accessed. they are expressions whose evaluation by the compiler determines the identity of objects or functions
+- prvalues DO NOT have an adress that is accessible directly, they are temporary expressions used to initialize objects or compute the value of tzhe operand of an operator
+- l / r are dreived from the perspective of = operator -> lvalue on the left / rvalue on the right // lvalue = rvalue
+- with other operators th r-l-view is not entirely correct
+- lvalue is an entity that points to a specific memormy location, rvalue usually a short lived object which is only needed in a narrow local scope
+-> simplified: lvalue are named containers for rvalues
+
+int i = 42;  // lvalue = rvalue;
+- 42 is an rvalue, it does not have an specific memory adress which we know
+- the rvalue is assigned to a variable i with a specific memory location which it makes an lvalue
+- with adress operator (&) we can make an lvalue from an rvalue and assign it to another lvalue 
+int *j=&i
+- here &i generates the adress of i as an rvalue which is an lvalue holding the memory location of i
+
+5.2.2.Lvalue references
+
+- an lvalue reference can be considered as an alternative name for an object it is an reference that binds to an lvalue followed by the reference decalrator
+
+    int i = 1; 
+    int &j = i; 
+    ++i;
+    ++j;
+    --> output: i=3, j=3
+
+- the reference j can be used as an alias for i
+- a change in i or j will effect the other as well
+- one primary usage is the pass-by-reference semantic in function calls
+
+5.2.3 Rvalue references
+
+- rvalue is  temporyr expression int i = 42;  // 42 is an rvalue,
+- with "42" or "i+j" we cannot make a lvalue-reference call (see 17_rvalue_ref.cpp)
+
+5.1. The Rule of three
+
+- with the default behavior the programmer is not considered to think about the memory management policy of their program
+-> simply leads to segfaults and crashes
+- there is a intricate relationship between destructor, copy constructor and copy assignment operator
+--> RuleOfThree: if a class needs to overload a copy constructor, copy assignment operator or a destructor then it must implement/overload the other two as well
+to ensure memory management consistently
+- copy constructor, copy assignment  operator (often almost identical) control how the resource gets copied between objects while destructor manages memory deletion
+- the copy semantics are the basis of a powerful concept in c++11: smart pointers
+
+
+5.1.4.
+
+- often we need to implement our own memory management policy
+(== copy-ownership policy)
+
+5.1.5. NoCopying policy
+
+- simplest one: forbid copying and assigning class instances
+- can be achieved by declaring, but not defining a private copy constructor and assignement operator
+or
+- making copy and assignment operator public & assigning the delete operator (more explicit and makes it clearer to the programmer that copying has been actively forbidden.)
+
+5.1.6. exclusive ownership policy
+
+- whenever a ressource management object is copied, the ressource handle is transfered from the source to the destination pointer
+- source pointer is set to null to make ownership exclusive
+- at any time the ressource handle belongs to a single object
+- but for a short time there are effectivly two valid handles to the same resource (after it has been copied and before its set to nullptr)
+--> this could cause a data race for the resource
+--> better with move semantics
+
+5.1.9 deep copying policy
+
+- copying and assigning class instances is possible without danger of resource conflicts
+- the idea is to allocate proprietary in the destination object and then copy the source object content to it
+- during the copy is preserved
+- but this increases memory demands / after the copy two version of the same resource exists in the memory
+
+5.1.10. shared ownership policy
+
+- similar to the default behavior (copying the handle instead of the content)
+- but keeping track of the same resource (increase/decrease of a counter if an instance is inside or outside its scope)
+- central idea of unique_ptr
+
+
+5. Ressource Copying Policies
+
+- often one need to implement it own memory managment implementation by overloading the asignement and copy-constructor/operators
+
+- a c++ programmers main responsib. is resource management (multithreraded-locks, files, network, db-connections and memory)
+-> common denominator (gNenner)
+-> after a resource is used and no longer needed it must be released again so thats its reused by someone else
+
+- a common way of safely accessing resources is a wrappng manager class around the handle which is initialized when the resource is aquired inside the ctor
+and released when its deleted (dtor)
+--> RAII (Resource Aquisition is Initialization)
+--> but to copy the managed object we also copy the handle (pointer to) the source -> this can lead to trouble
+
+- by default we only make a shallow copy of the ressources in a class (pointers/ memory adresses are only copied, but not the content itself)
+--> if the source object is gone, the original content is also gone -> and if another object still points to this resource -> BAEMM
+
+4.6. memory management problems
+
+- one of primary advantages of c++ is the flexibility & control of ressources such as memory
+-> performance boost
+
+- but this comes at a price as it deman a high level of experience from the programmer. 
+"C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do it blows your whole leg off".
+
+1. memory leaks
+- mem leaks occur when data is allocated on the heap at runtime, but not properly deallocated
+->  a program that forgets to clea a memory block has a mem leak
+- mem leaks are not a problem when the program runs, computes st and quits, but when it runs a long time and uses big datastructures
+-> mem leaks can gradually fill the heap until allocation requests can't be met anymore 
+-> program will crash/stop working
+
+2. buffer overrun
+- this happens when memory outside the allocated limits is overwritten an corrupted. 
+- it may not become immediatly visible
+- cause and effect are often hard to discern
+- st its possible to inject malicious code
+
+e.g. 
+char str[5];
+strcpy(str,"BufferOverrun");
+printf("%s",str);
+
+3. uninitialized memory
+
+- depending on the compiler ds are sometimes initialized (mostly to 0) and st not
+- memory can st contain garbage that cause problems
+a variable will be automatically initialized in these cases:
+
+ - it is a class instance where the default constructor initializes all primitive types
+ - array initializer syntax is used, such as int a[10] = {}
+ - it is a global or extern variable
+ - it is defined static
+
+ 4. Incorrect pairing of allocation and deallocation
+- freeing memory more than once will cause the program to crash
+-> this can happen when a block of memory is freed has never been allocated or has been freed before
+-> or improper pairings of allocation & deallocation are used (malloc() with delete / new with free())
+
+5. invalid memory access
+
+- This error occurs when trying to access a block of heap memory that has not yet or has already been deallocated.
+
+    char *pStr=new char[25];
+    delete[] pStr;
+    strcpy(pStr, "Invalid Access");
+
+a special tool can do memory checks like valgrind
+
+- https://valgrind.org/info/tools.html
+
+--> here we are only interesseted in the memcheck-tool, which detects memory problems
+--> command:  valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=/home/udacity/UdacityCpp/05_MemoryManagement/build/valgrind-out.txt ~/udacity/UdacityCpp/05_MemoryManagement/build/memoryProblems2
+
+--leak-check : Controls the search for memory leaks when the client program finishes. If set to summary, it says how many leaks occurred. If set to full, each individual leak will be shown in detail.
+
+--show-leak-kinds : controls the set of leak kinds to show when —leak-check=full is specified. Options are definite, indirect, possible reachable, all and none
+
+--track-origins : can be used to see where uninitialised values come from.
+
+- for vstudio one can use CRT lib: https://docs.microsoft.com/en-us/visualstudio/debugger/finding-memory-leaks-using-the-crt-library?view=vs-2019
+
+--> to mainly avoid memleaks one should use smart pointers and move semantics
+
 4.4. new/delete
 
 - n/d are operators instead of malloc/free , which are library-functions (default way of allocating/dealloc mem in C)
@@ -24,4 +209,27 @@ Note: that this should never be done outside of placement new
 
 - One of the major advantages of new/delete over free/malloc is the possibility of overloading. 
 
-FIXME: 7/11
+--> void *operator new(size_t size) : new gets its size automatically although we don'call new with the size explicitly, this is done by the system
+
+- if we overload new and use  "malloc" to allocate memory we need to also overload delete and call free.
+- memory is allocated before the constructor ios called
+
+- to create an array of objects we can use:
+    
+    void* operator new[](size_t size);
+    void operator delete[](void*);
+
+- when using an array the compiler needs to keep track of the allocated blocks-which itself consumes memory (which costs 8byte)
+
+The overloaded new operator function allows to add additional parameters. Therefore, a class can have multiple overloaded new operator functions. This gives the programmer more flexibility in customizing the memory allocation for objects.
+
+Overloaded the new and delete operators provides an easy way to integrate a mechanism similar to garbage collection capabilities (such as in Java), as we will shorty see later in this course.
+
+By adding exception handling capabilities into new and delete, the code can be made more robust.
+
+It is very easy to add customized behavior, such as overwriting deallocated memory with zeros in order to increase the security of critical application data.
+
+- new/delete is flexible but although dangerous
+
+- bjarne  recommends to use new/delete only on abstraction level not int the application code
+
