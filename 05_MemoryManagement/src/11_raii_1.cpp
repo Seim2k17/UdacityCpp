@@ -41,7 +41,7 @@ int main()
     memClassB.printMemberAdress();
 
     // here the programm crashes because in the destructor of MemClass _myInt is deallocated once in the Instance of memClassA and then again from memClassB
-    // --> double free (it has the same memory-adress due default copy-behaviour)
+    // --> double free (it has the same memory-adress due default copy-behaviour is to create a shallow copy)
 
     return 0;
 }

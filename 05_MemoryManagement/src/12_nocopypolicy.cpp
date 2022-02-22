@@ -13,7 +13,7 @@ class NoCopyClass2
 {
 public:
     NoCopyClass2(){}
-    // making copy and assignment operator public & assigning the delete operator to disable copying
+    // making copy and assignment operator public & assigning the delete operator to disable copying (more explicit)
     NoCopyClass2(const NoCopyClass2 &) = delete;
     NoCopyClass2 &operator=(const NoCopyClass2 &) = delete;
 };

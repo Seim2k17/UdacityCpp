@@ -1,7 +1,16 @@
 .PHONY: all
-allmain: prog 17 prog16 prog15 prog14 prog13 prog1 prog2 prog3 prog4 prog5 prog6 prog7 prog8 prog9 prog10 prog11 prog12
+allmain: prog20 prog19 prog18 prog17 prog16 prog15 prog14 prog13 prog1 prog2 prog3 prog4 prog5 prog6 prog7 prog8 prog9 prog10 prog11 prog12
 
 .PHONY: all
+prog20:
+	cd build && \
+	g++ -Wall -o 20_rule_of_five ../src/20_rule_of_five.cpp
+prog19:
+	cd build && \
+	g++ -Wall -o 19_rule_of_three ../src/19_rule_of_three.cpp
+prog18:
+	cd build && \
+	g++ -Wall -o 18_move_semantics ../src/18_move_semantics.cpp
 prog17:
 	cd build && \
 	g++ -Wall -o 17_rvalue_ref ../src/17_rvalue_ref.cpp

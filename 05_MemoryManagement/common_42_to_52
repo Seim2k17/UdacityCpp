@@ -1,5 +1,7 @@
-
 5.2. rvalues / lvalues
+
+see also:   https://medium.com/@dhaneshvb/how-to-crack-the-confusing-world-of-lvalues-and-rvalues-in-c-it-is-easy-61c32ced51ce
+            https://docs.microsoft.com/en-us/cpp/cpp/lvalues-and-rvalues-visual-cpp?view=msvc-160
 
 - to understand this concepts helps to undertsand the lifecycle of objects in memory
 - rvalue references are the key to more efficient programming in c++
@@ -51,8 +53,15 @@ int *j=&i
 
 5.2.3 Rvalue references
 
-- rvalue is  temporyr expression int i = 42;  // 42 is an rvalue,
+- rvalue is  temporay expression int i = 42;  // 42 is an rvalue,
 - with "42" or "i+j" we cannot make a lvalue-reference call (see 17_rvalue_ref.cpp)
+- since c++11 a new type is availaber called rvalue reference (&& after a type name)
+-> with this its possible to store and even modify an rvalue, e.g. a temporarley object which otherwise is lost
+- see also 17_rvalue_ref.cpp
+- rval are more efficient, we can hold temporary objects in memory (i+j is not created temporarely, then copied, then deleted, but directly at a memory adress)
+-> here a few bytes of storage is not a big win but this is the start for move semantics
+--> mighty technic in c++ to optimize mem usage and processing speed
+- move semantics an rvalue refs that transfers ressources (e.g. dynamically allocated memory) from one object to another in a very efficient manner and also support exclusive ownership (see 5.3.)
 
 5.1. The Rule of three
 
