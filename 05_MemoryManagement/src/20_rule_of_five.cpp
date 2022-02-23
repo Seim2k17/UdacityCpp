@@ -41,6 +41,7 @@ public:
         return *this;
     }
 
+
     MyMovableClass(MyMovableClass &&source) // 4 : move constructor
     {
         std::cout << "MOVING (c’tor) instance " << &source << " to instance " << this << std::endl;
@@ -73,9 +74,28 @@ public:
 
 int main()
 {
-    MyMovableClass obj1(10); // regular constructor
-    MyMovableClass obj2(obj1); // copy constructor
-    obj2 = obj1; // copy assignment operator
+
+    bool moveSemantics = true;
+
+    if (!moveSemantics)
+    {
+        MyMovableClass obj1(100), obj2(200); // constructor
+
+        MyMovableClass obj3(obj1); // copy constructor
+
+        MyMovableClass obj4 = obj1; // copy constructor
+
+        obj4 = obj2; // copy assignment operator
+    }
+    else
+    {
+        MyMovableClass obj1(100); // constructor
+
+        obj1 = MyMovableClass(200); // move assignment operator
+
+        MyMovableClass obj2 = MyMovableClass(300); // move constructor 
+    }
+
 
     return 0;
 }

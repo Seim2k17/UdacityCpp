@@ -84,7 +84,29 @@ where the number 42 is stored.
 --> if you have to implement one of the following functions you should implement the other wither proper implementation as well
         1. destructor (responsible for freeing resources)
         2. assignement operator (default performs a member wise shallow copy, if a deep copy is needed -> implement it)
-        3. copy constructor ( as with the assignment op)
+        3. copy constructor ( as with the assignment op, the default copy constructor performs a shallow copy of the data members, if st. else is needed, the programmer has to implement it accordingly.
+        4. move constructor: Because copying objects can be an expensive operation which involves creating, copying and destroying temporary objects, rvalue references are used to bind to an rvalue. Using this mechanism, the move constructor transfers the ownership of a resource from a (temporary) rvalue object to a permanent lvalue object.
+        5. The move assignment operator: With this operator, ownership of a resource can be transferred from one object to another. The internal behavior is very similar to the move constructor.
 
-(proceed. 5.3.12)
+When are move semantics used?
+
+- where heavy-weight objects need to be passed around in a program (Copying these without move semantics can cause series performance issues)
+-> the idea in this scenario is to create the object a single time and then "simply" move it around using rvalue references and move semantics.
+- a second area of application are cases where ownership needs to be transferred (such as with unique pointers)
+-> the primary difference to shared references is that with move semantics we are not sharing anything but instead we are ensuring through a smart policy that only a single object at a time has access to and thus owns the resource.
+
+(20_rule_of_five.cpp w/o move semantics: Note that the compiler has been called with the option -fno-elide-constructors to turn off an optimization techniques called copy elision, which would make it harder to understand the various calls and the operations they entail. This technique is guaranteed to be used as of C++17, which is why we are also reverting to the C++11 standard for the remainder of this chapter using -std=c++11. Until now, no move operation has been performed yet as all of the above calls were involving lvalues. )
+
+(slide 15: we can see that the temporary object at 0x7ffeefbff708 is moved to 0x7ffeefbff718 using the move assignment operator we wrote earlie should be (... 0x7ffc1ad9e0c0 is moved to 0x7ffc1ad9e0b)
+
+-> with move semantics: 
+(memory adress are different !
+- looking at the stack addresses: we can see that the temporary object at 0x7ffeefbff708 is moved to 0x7ffeefbff718 using the move assignment operator,  the instance obj1 is assigned an rvalue (as expected from an rvalue, its destructor is called immediately afterwards)
+- because we null its data pointer in the move constructor, the actual data will not be deleted
+-> the advantage from a performance perspective in this case is that no deep-copy of the rvalue object needs to be made, we are simply redirecting the internal resource handle thus making an efficient shallow copy.)
+
+Next, another temporary instance with a size of 1200 bytes is created as a temporary object and "assigned" to obj3. Note that while the call looks like an assignment, the move constructor is called under the hood, making the call identical to MyMovableClass obj2(MyMovableClass(300));. By creating obj3 in such a way, we are reusing the temporary rvalue and transferring ownership of its resources to the newly created obj3.
+--> output says st different ? / there is no obj3 atm
+
+(proceed. 5.3.16)
 
