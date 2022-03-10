@@ -1,0 +1,86 @@
+- RAII - idiom Resource Acquisition Is Initialization
+-> developed by bjarne and let to smart pointers
+- with new/delete we need always to know who is responsible for the memory
+- the idea is to put a management class around the ressource and inside the class while provide access to the programmer by well defined interfaces only
+
+6.1.1.
+- malloc/free, new/delete is very powerful but correct use rerquires skill, experience and concentration from the programmer
+-> if not handled correctly bugy will quickly arise
+-> major error source is details around free/malloc, new/delete are completely left to the programmer
+
+Main problems:
+    1. proper pairing needed
+        every new must follow a delete at a certain point, if one forgets to call delete -> memory leaks will follow
+    2. correct operator pairing
+        c++ offers a variety of new/delete operators
+        e.g. if an array is allocated with new[] it should only be deleted with delete[] ... / if a wrong operator pair is used -> undefined behavior
+    3. memory ownership
+        if a tird party function returns a pointer to a datastructur the only way of knowing who is responsible for res. deallocation is to look into the code or docu -> if both is not available you can run into serious trouble
+
+6.1.2. smart pointers
+
+- smart pointers were introduced to solve the above problems with new/delete
+- to provide a degree of automatic memory management
+-> if a smart pointer is no longer needed (out of scope) the memory it points to is deallocated
+-> now conventional pointers are often termed: "raw pointers"
+-> smart pointers are classes wrapped around raw pointers
+- * / -> operators are overloaded and so it possible to use the same syntax as with raw pointers
+-> this technique of wrapping a management class around a resource is called RAII
+
+6.1.3. RAII
+- is programming paradigm that is used to protect a resource like a filestream, a networkl connection or block of memory which needed proper management
+
+- aquiring and releasing resources
+-> a certain action at some point will need a proper reaction at another point 
+-> Acquire / Release (new-delete / open-close files,streams/ lock-unlock critical sections) 
+
+6.1.4. the problem of reliable resource release
+- a common pattern: obtain resource->use resource->release resource
+- but there a problems
+    1. the program might throw an exception during the resource usage and release might never be reached
+    2. there might be several point where to release the resource -> tricky
+    3. forget to release
+
+6.1.5. RAII to the rescue
+- major idea: object ownership and information hiding
+- allocation/deallocation are hidden within the management class, so programmer does not have to worry about mem management respons.
+- whoever owns a resource, deals with it
+- in case of RAII this is the management class around the protected resource
+-> the goal is to have new/delete disappear from the surface level of code we write
+
+advantages:
+    1. use class destructors to perform resource cleanup, when the RAII object gets out of scope
+    2. manage ownership and lifetime of dynamically allocated objects
+    3. implement encapsulation
+
+--> 3 major parts of an RAII class
+    1. a resource is allocated in the cdor of the RAII class
+    2. the resource is deallocated in the dedor of the RAII class
+    3. all instances of the RAII class are allocated on the stack to reliably control the lifetime via object scope
+
+6.1.6. & 6.1.7.
+
+01_raii_example.cpp
+- one could quickly forghet to call the delete at the end of the loop
+- so we use the principle of RAII to automatically call it 
+
+02_raii_example2.cpp
+- when the destructor is called from MyInt the resource is deleted from the memory which makes it a RAII management class.
+- also the * operator is overloaded which enables dereference MyInt-objects as with raw pointers
+
+- the part new int(i) creates a new block of memory on the heap and init it with the value of i
+- the returned result is the adress of the block of memory
+- MyInt(..) calls the constructor passing the adress of a a valid memblock as a parameter
+
+- after creating a object an object of the class MyInt on the stack, which interally create an integer on the heap we can use the deref operator like any other pointer (because we overloaded it)
+- because the variables are on the stack they are autonmatically deallocated when they get out of scope (the destructoir then is called automatically) ...
+-> we have automatically created an RAII management class
+
+Quiz: see 03_raii_example3
+-> memory leaks arise, because the destructor will never be called this way (no delete for allocation of the instances of MyInt on the heap)
+
+-> this RAII example (02_raii_example2.cpp) is similar to a smart pointer class
+
+6.2. 
+- bjarne: when get into scope -> allocation
+- when getting out of scope -> automatically called destructor whichs deallocates / clean memory

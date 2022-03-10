@@ -3,6 +3,21 @@
 see also:   https://medium.com/@dhaneshvb/how-to-crack-the-confusing-world-of-lvalues-and-rvalues-in-c-it-is-easy-61c32ced51ce
             https://docs.microsoft.com/en-us/cpp/cpp/lvalues-and-rvalues-visual-cpp?view=msvc-160
 
+- lvalue : locator value represents an object that occupies some identifiable location in memory (i.e. has an adress)
+-> variable names, const variables, array elements, function calls that return an lvalue reference, bitfields, unions & class members
+
+    e.g const int nVal = 0
+
+-  rvalue: is anm expression that DOES NOT represent an object occupying an identifiable memory location (i.e. has NO adress)
+
+    int nVal1 = 10 // nVal1 is an lvalue, 10 is an rValue
+
+    callMe(nVal1+nVal2); // The expression (nVal1+nVal2) is an rvalue
+    
+    The rvalue can be assigned to an lvaue but not vice versa.
+
+    Cntd: medium-link @ "The lvalue reference and rvalue reference"
+
 - to understand this concepts helps to undertsand the lifecycle of objects in memory
 - rvalue references are the key to more efficient programming in c++
 --> all containers from the stl use rvalue refs and movesemantics

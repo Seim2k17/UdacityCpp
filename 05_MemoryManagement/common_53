@@ -1,8 +1,9 @@
 5.3. move semantics
 
 - introduced in c++11
-- rvalue refs is important prerequisite of understanding moving datastructures
+- rvalue refs is important prerequisite of understanding moving datastructures and concept of smart pointers
 
+Code (C1)
         void myFunction(int &&val)
         {
             std::cout << "val = " << val << std::endl;
@@ -15,16 +16,19 @@
             return 0; 
         }
 
--> programmers msg: here the object that binds to the rvalue reference &&val is yours and not needed anymore by the scope of main
-- passing values like this improves pereformance / no temporary copy needed
-- ownership changes, the object the refernce binds to has been abandoned by the caller & now binds to a handle by the receiver
-- with lvalue refs this would not possible: any chnage to the objects thats binds to the lvalue ref would also be visible on the caller side
+-> programmers msg: here the object that binds to the rvalue reference &&val is yours and not needed anymore by the scope of main,
+-> two perspective are here really interesting
+        1. passing values like this improves performance / no temporary copy needed
+        2. ownership changes, the object the refernce binds to has been abandoned by the caller & now binds to a handle by the receiver
+        , with lvalue refs this would not possible: any change to the objects thats binds to the lvalue ref would also be visible on the caller side
 
-- rvalues refs are themselves lvalues
-- a reference is defined in a certain context (like val from above)
+- rvalues refs are themselves lvalues, at first confusing but this is the mechanism that enables move semantics
+- a reference is defined in a certain context (like val from above in C1)
 - Even though the object it refers to (the number 42) may be disposable in the context it has been created (the main function), 
-it is not disposable in the context of the reference . So within the scope of myFunction, val is an lvalue as it gives access to the memory location 
-where the number 42 is stored.
+it is not disposable in the context of the reference . So within the scope of myFunction, val is an lvalue as it gives access to the memory location where the number 42 is stored.
+
+
+
 - however we can't pass an lvalue to myFunction ( an rvalue can't bind to an lvalue)
         
         int i = 23;
@@ -55,6 +59,7 @@ where the number 42 is stored.
 - we now consider another wayy of instantiating MoveableClass object by using createObject()
 ... see sourcefile
 
+- when a function returns an object by value the compiler creates a temporary object as an rvalue
 - like this implementation there are far to many copies involved this will make in inefficient esp. with big data structures! 
 - before c++11 this would be solved by not returning copy by values
 - since c+11 there is a more efficient way to even return large Datastrutures by value
@@ -69,7 +74,7 @@ where the number 42 is stored.
 - similar to the copy constructor
 - move c'tor use a instance of a class as source, but after moving the source instance will no longer be usable afterwards
 
-        // use an rvalue reference 
+        // use as input an rvalue reference to a source object
     MyMovableClass(MyMovableClass &&source) // 4 : move constructor
     {
         std::cout << "MOVING (c’tor) instance " << &source << " to instance " << this << std::endl;
@@ -78,6 +83,27 @@ where the number 42 is stored.
         source._data = nullptr;
         source._size = 0;
     }        
+
+- the move assignemnet operaotor works in a similar way, the data is copied from source to target which is coming as an rvalue reference again
+
+ MyMovableClass &operator=(MyMovableClass &&source) // 5 : move assignment operator
+    {
+        std::cout << "MOVING (assign) instance " << &source << " to instance " << this << std::endl;
+        if (this == &source)
+            return *this;
+
+        delete[] _data;
+
+        _data = source._data;
+        _size = source._size;
+
+        source._data = nullptr;
+        source._size = 0;
+
+        return *this;
+    }
+
+
 - with implementing move-constructor and move assignement operator we've adhered the rule of 5
 --> esp. important in memory management
 --> all stl-containers like vector implement the rule of 5
@@ -90,23 +116,46 @@ where the number 42 is stored.
 
 When are move semantics used?
 
-- where heavy-weight objects need to be passed around in a program (Copying these without move semantics can cause series performance issues)
--> the idea in this scenario is to create the object a single time and then "simply" move it around using rvalue references and move semantics.
-- a second area of application are cases where ownership needs to be transferred (such as with unique pointers)
--> the primary difference to shared references is that with move semantics we are not sharing anything but instead we are ensuring through a smart policy that only a single object at a time has access to and thus owns the resource.
+1. where heavy-weight objects need to be passed around in a program (Copying these without move semantics can cause series performance issues)
+   -> the idea in this scenario is to create the object a single time and then "simply" move it around using rvalue references and move semantics.
+2. a second area of application are cases where ownership needs to be transferred (such as with unique pointers)
+   -> the primary difference to shared references is that with move semantics we are not sharing anything but instead we are ensuring through a smart policy that only a single object at a time has access to and thus owns the resource.
 
-(20_rule_of_five.cpp w/o move semantics: Note that the compiler has been called with the option -fno-elide-constructors to turn off an optimization techniques called copy elision, which would make it harder to understand the various calls and the operations they entail. This technique is guaranteed to be used as of C++17, which is why we are also reverting to the C++11 standard for the remainder of this chapter using -std=c++11. Until now, no move operation has been performed yet as all of the above calls were involving lvalues. )
-
-(slide 15: we can see that the temporary object at 0x7ffeefbff708 is moved to 0x7ffeefbff718 using the move assignment operator we wrote earlie should be (... 0x7ffc1ad9e0c0 is moved to 0x7ffc1ad9e0b)
+(20_rule_of_five.cpp w/o move semantics: 
+        compiler has been called with the option -fno-elide-constructors to turn off an optimization techniques called copy elision, which would make it harder to understand the various calls and the operations they entail) 
+        this is standard in C++17, which is why we are also reverting to the C++11 standard for the remainder of this chapter using -std=c++11. here no move operation has been performed because all calls were involving lvalues)
 
 -> with move semantics: 
 (memory adress are different !
 - looking at the stack addresses: we can see that the temporary object at 0x7ffeefbff708 is moved to 0x7ffeefbff718 using the move assignment operator,  the instance obj1 is assigned an rvalue (as expected from an rvalue, its destructor is called immediately afterwards)
 - because we null its data pointer in the move constructor, the actual data will not be deleted
--> the advantage from a performance perspective in this case is that no deep-copy of the rvalue object needs to be made, we are simply redirecting the internal resource handle thus making an efficient shallow copy.)
+-> the advantage from a performance perspective in this case is that no deep-copy of the rvalue object needs to be made, simply redirecting the internal resource handle thus making an efficient shallow copy)
 
-Next, another temporary instance with a size of 1200 bytes is created as a temporary object and "assigned" to obj3. Note that while the call looks like an assignment, the move constructor is called under the hood, making the call identical to MyMovableClass obj2(MyMovableClass(300));. By creating obj3 in such a way, we are reusing the temporary rvalue and transferring ownership of its resources to the newly created obj3.
---> output says st different ? / there is no obj3 atm
+- in case 4. another temporary instance (300) with a size of 1200 bytes is created as a temporary object and "assigned" to obj2.
+-> the call looks like an assignment, but the move constructor is called under the hood, making the call identical to MyMovableClass obj2(MyMovableClass(300));
+-> By creating obj2 in such a way, we are reusing the temporary rvalue (300) and transferring ownership of its resources to the newly created obj2.
 
-(proceed. 5.3.16)
 
+Moving lvalues
+--------------
+- in some cases we want to transfer ownership of an resource to another part of the program as it's not needed anymore in the current scope
+-> to treat lvalues like rvalues
+- we don't want to copy it but just move it
+
+e.g.
+void useObject(MyMovableClass obj)
+{
+    std::cout << "using object " << &obj << std::endl;
+}
+
+- if we us simply the call useObject(obj1) we will trigger the copy cdor and make a copy over a temporary object from obj
+--> we have to pretend to the compiler that obj1 was an rvalue instead an lvalue, so we can make an efficient move operation instead of an expensive copy
+
+- we can use std::move() for this which accepts rvalues and lvalues as arguments and force the compiler to use movesemantics in the form of the move cdor or move assignment operator
+
+- useObject(std::move(obj1))
+-> now the ownership of the ressource changes from obj1 to useObj (== obj)
+- after the call to useObject the instance obj1has been invalidated
+
+- major improvement since c++11
+-> it's worth the effort to understand this
