@@ -1,8 +1,11 @@
 .PHONY: all
-allmain: ex1
+allmain: pract1
 
 .PHONY: all
-
+pract1:
+	cd ../../build && \
+	g++ -Wall -o 6_p1_smart_pointer ../src/Excercise/practice_smart_pnt.cpp
+	
 
 .PHONY: debug
 debug:

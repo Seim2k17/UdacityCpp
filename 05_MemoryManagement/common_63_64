@@ -1,0 +1,224 @@
+6.3.1 RAII and smart pointers
+
+- RAII reduces the risk of improperly managed resources
+- it let us encapsulate new/delete calls within a class and give the programmer a clean interface
+to the resource to use
+- since c++11 there are smart pointers within the stl which build on this concept and revolutionizes the way we use resources on the heap
+- they help to free programs from memory leaks
+
+- with smart pointers RA occurs at the same time that the object is initialized
+(instantiatet with make_shared or make_unique) 
+-> all resources for the object are created and initialized within a single line
+
+- in modern c++ raw pointers should only be used in small blocks of code with limited scope, where performance is crucial and ownership is clear
+
+6.3.2.
+- c++1 has introduced 3 types of smart pointers
+
+    1. unique pointers (std::unique_ptr), 
+    exclusivly ownes a dynamically allocated resource on the heap, no 2nd unique ptr to the same resource is allowed
+    2. shared pointers (std::shared_ptr)
+     point to a resource but does not explicitly own it, several shared ptrs to the same resource are allowed; each will increase an internal reference count; when the count reaches 0 the resource willa automatically be deallocated
+    3. weak pointer (std::weak_ptr) behaves similar to the shared pointer but does not increase the reference count
+
+prior to c+11 there was std::auto_ptr which is similar but deprecated and should not be used anymore
+
+6.3.3. unique ptr
+
+- exclusive owner of the memory resource it represents
+- if there is a 2nd unique ptr to the resource there will be a compiler error
+- as soon as the unique ptr goies out of scope, the mem resource is deallocated
+- unique ptrs are useful when working with a temporary heap resource that is no longer needed when out of scope
+
+auto sourcePtr = make_unique<MyObject>();   (sourcePtr--->heap resource)
+auto destPtr = std::move(sourcePtr);        (destPtr--->heap resource)
+-> a resource is managed by sourcePtr
+-> the resource is reassigned using std::move to destPtr
+-> resource is now owned by destPtr
+-> sourcePtr can still be used but does not manage this resource anymore
+
+unique ptr is constructed with std::make_unique<Type> p(new Type)
+
+6.3.4. raw vs. unique
+
+int *raw = new int;
+*raw = 1;
+delete raw:
+
+std::make_unique<int> uniquePtr(new int);
+*uniquePtr = 2;
+
+-> take care to create unique ptrs  only on the stack otherwise the deallication won't work
+-> initialized with a raw pointer to a heap allocated-object
+-> the smart pointer destructor contains the call to delete
+-> because its declared on the stack this destructor is invoked when the smart pointer gets out of scope-thus mem is deallocated automatically
+
+
+6.3.5. video: smart ptr usage nd213-c03-l05-02.2-smart-pointers-sc_720p
+
+- smaret pntrs are relativly easy to implement
+- std::unique_ptr<DataClass> smartPnt1(new DataClass());
+-> smartPnt1 lives on the stack, but the instance of DataClass() lives on the heap (which is managed by smartPnt1)
+
+-> thats why we use .get() method if we want to get the raw pointer of DataClass()
+
+
+6.3.6. see 04_smart_pnt_1.cpp
+
+original:
+
+#include <iostream>
+#include <memory>
+#include <string>
+
+class MyClass
+{
+private:
+    std::string _text;
+
+public:
+    MyClass() {}
+    MyClass(std::string text) { _text = text; }
+    ~MyClass() { std::cout << _text << " destroyed" << std::endl; }
+    void setText(std::string text) { _text = text; }
+};
+
+int main()
+{
+    // create unique pointer to proprietary class
+    std::unique_ptr<MyClass> myClass1(new MyClass());
+    std::unique_ptr<MyClass> myClass2(new MyClass("String 2"));
+
+    // call member function using ->
+    myClass1->setText("String 1");
+
+    // use the dereference operator * 
+    *myClass1 = *myClass2;
+
+    // use the .get() function to retrieve a raw pointer to the object
+    std::cout << "Objects have stack addresses " << myClass1.get() << " and " << myClass2.get() << std::endl;
+
+    return 0;
+}
+
+6.3.8. summary unique pointer:
+
+- unique ptrs allows a single owner of a raw pointer
+- should be default choice until one know for certain that sharing is required
+- by using the rule of five and move semantics we transfer ownership btw. resources
+- the unique pnt. uses this concept when we use the move assignement op. or the move constructor is called
+- a unique pointer can also be converted into a shared pointer
+
+6.3.9 shared pointer
+
+- it also owns the resource it points to
+- but keep a reference counter on how many of them point to the same resource
+- each time a shared pointer goes out of scope the counter decreases
+- when it reaches 0 the memory is deallocated
+- this is useful when one require access to a memory location on the heap in multiple parts of the program
+
+shared pnt1                                 shared pnt2
+-----------                                 -----------
+objectPtr           ---> heap       <---    objectPtr
+refCountPtr         ---> refCount=2 <---    refCountPtr
+
+6.3.9-12
+see 05_smart_pnt_2.cpp
+- as soon as shared2 goes out of scope -> the use_count is reduced because shared2 is destroyed
+
+- a shared pnt can be reset (i.e. goes out of scope manually-> destructor is called of the resource or managed object is deleted)
+and then can be used to point at a different resource
+
+- despite all advantages of smart pointers there are still problems (e.g. circular references) (i.e. witrh shared pointer)
+-> see 06_smart_pnt_circular.
+-> when class1 goes out of scope (end of main), the destrcutor could not clean up memory as there is still a reference count of 1 in the smart pointer (shared member) of class2) and vice verca
+-> this deadlock prevents dedor from being called and causes a memory leak
+-> to prevent circular refs we can use a weak pointer
+
+6.3.13_14 the weak pointer
+- like the shared pnt multiple weak pnts can point to the same resource
+-> but without increasing the reference count
+- weak pnts hold a non owning reference to an object that is managed by another shared pointer
+
+- rule: you can only create weak pointers out of shared pointers or another weak pointer
+-> see 07_smart_weak_pnt.cpp
+- if one directly want to create a weak pnt to an resource -> compile error
+- weak pnts have no effect on the ref count
+
+- but we never can be sure wether the mem resource to which the pnt refer is still valid
+- but we can check the validity of its resource (.expired() )
+
+6.3.15 conversion of smart pnts
+
+(1) from unique -> shared
+- using move which calll the move assignment operator on sharedPtr1 and steals the resource from uniquePtr and reallocate the resource handle from uniquePtr
+
+std::unique_ptr<int> uniquePtr(new int);
+std::shared_ptr<int> sharedPtr1(std::move(uniquePtr));
+
+(2) from weak to shared
+- to avoid invalid memory access you want to make sure that the object will not be deallocated before your work on it has been finished
+-> to convert use .lock() on the weak pointer
+
+(3) get a raw pointer from shared pointer
+-> no decreasing of the refcount within the sharedmem-object
+- but a delete on the raw-pointer as a resource is trying to be deleted which is managed by the shared pnt obje which already have been removed ....
+
+- no conversion from a shread pnt is possible -> once declared one need to stick wuth it until the end of the program
+
+6.3.16_17. when to use smart pnts
+
+- often
+- make code much safer
+-> no need to think often about alloc and dealloc of the resource
+--> fewer me leaks by dangling pnts or crashes from accessing invalid memory block
+
+- by using raw pointers the appeareance of these bugs are possible
+    1. mem leaks
+    2. freeing mem that shouldn't be freed
+    3. freeing mem incorrectly
+    4. using mem that has not been allocated
+    5. thinking that mem is sill allocated after beeing freed
+
+- core guidelines: 
+    R. 10: Avoid malloc and free While the calls (MyClass*)malloc( sizeof(MyClass) ) and new MyClass both allocate a block of memory on the heap in a perfectly valid manner, only new will also call the constructor of the class and free the destructor. To reduce the risk of undefined behavior, malloc and free should thus be avoided.
+
+    R. 11: Avoid calling new and delete explicitly Programmers have to make sure that every call of new is paired with the appropriate delete at the correct position so that no memory leak or invalid memory access occur. The emphasis here lies in the word "explicitly" as opposed to implicitly, such as with smart pointers or containers in the standard template library.
+
+    R. 12: Immediately give the result of an explicit resource allocation to a manager object It is recommended to make use of manager objects for controlling resources such as files, memory or network connections to mitigate the risk of memory leaks. This is the core idea of smart pointers as discussed at length in this section.
+
+summary: raw pointers created with new / delete allow high flexibility and control over the managed object
+- to mitigate their erropr proneness:
+    - a call to new should not be located far from the corresponding delete (bad style to strecht over a whole progam)
+    - calls to new/delte should always be hidden from third parties (similar R12)
+
+    - there are some rules for using smart pointer in the core guidelines 
+    (http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#rsmart-smart-pointers)
+
+    most important ones
+    R. 20 : Use unique_ptr or shared_ptr to represent ownership
+    R. 21 : Prefer unique_ptr over std::shared_ptr unless you need to share ownership
+        - unique ptr is an exclusive owner of the managed resource, it can't be copied, only moved, a shared ptr shares the magaed obj with others
+        - shared ptrs are more expensive
+
+    R. 22 : Use make_shared() to make shared_ptr
+    R. 23 : Use make_unique() to make std::unique_ptr
+        - because of the management overhead we shoul prefer the usage of make_...
+        -> this also removes the risk of mem_leaks (since C++14)
+    R. 24 : Use weak_ptr to break cycles of shared_ptr
+        - resource can safely be deallocated
+
+    -> other guidelines refer to how to pass a smart pointer to a function
+
+Outro:  - unique ptrs should be the default smart pntrs
+        - use smart ptrs if you need to share ownership to a resource
+        -> but be aware of reference cycles
+        - to break the cycle use weak pointers
+
+6.4. Bjarne: see 6 - ND213 C03 Smart Pointers What Are Pointers- 1.mp4
+ - use smart ptns in favor to raw pointers
+ - unique pointer:  if i have it and go out of scope the resource will be deleted
+                    if you have it you're responsible and have the ownwership, i transfer it & if you go out of scope-> the resource will be deleted
+                    if we use a raw pointer we need to take care of it all by ourselves
+                    the most popular is the shared pointer, i give everbody one and the last one to use it will implicitly delete the resource, form of garbage collection
+                    -> but its even better to only use for local objects

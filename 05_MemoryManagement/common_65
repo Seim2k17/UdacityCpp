@@ -1,0 +1,134 @@
+6.5. transfering ownership
+
+R. 30 : Take smart pointers as parameters only to explicitly express lifetime semantics
+
+1/6
+- core idea: function that only manipulate objects without effecting its lifetime in any way
+should not be concerned with a particular kind of smart pointer
+- a function should only take smart pointers as parameters only if it examines or manipultae 
+the smart pointer itself
+-> transfering ownership e.g.
+- if a function only operates in the underlying object without any need of smart pointer properties
+-> use raw pointer or references
+
+- passing smart pointers by value means to lend their ownership to a particular function
+e.g.:   void f(std::unique_ptr<MyObject> ptr)
+
+        void f(std::shared_ptr<MyObject> ptr)
+
+        void f(std::weak_ptr<MyObject> ptr)
+
+-> f has a private copy of the pointers which it can and should modify
+-> depending on the type ofd the smart pointer a tailored strategy needs to be used        
+
+2/6
+- unique pointers can't be copied, that make no sense, but sometimes we need to transfer ownership
+-> we can move it
+
+- see 10_transfer_smart_pnt_1.cpp
+
+- under the hodd smart pnts have implemented the rule of 5 -> they can deal with movce semantics
+
+3/6
+
+- the basic idea of a unique_ptr is that there only exists only a single instance of it
+->see comments for 10_transfer_smart_pnt_1.cpp
+
+4/6
+
+- when using a shared_ptr move semantics are not needed
+-> we can use here a specific rule from the core guidelines: 
+        R.34: Take a shared_ptr parameter to express that a function is part owner
+        (R.34: Take a shared_ptr<widget> parameter to express shared ownership)
+
+-> see 11_transfer_smart_pnt_2, throughout the program the adress of the managed object does not change
+
+5/6
+
+R.33: Take a unique_ptr& parameter to express that a function reseats the widget
+
+and
+
+R.35: Take a shared_ptr& parameter to express that a function might reseat the shared pointer
+
+-> passing-by-ref when the function supposed to modify the ownership of an existing smart pointer and not copy
+-> we pass a non const ref to a unique_ptr to a function if it might modify it in any way, including deletion & reassignment to a different resource
+
+- passing a unique_ptr as const is not useful as the function will not be able to do anything with its
+-> unique ptr are all about proprietary ownership and as soon as the pointer is passed the function will assume ownership; but without the right to modify, options are limited
+
+- a shared pointer can either be passed as const or non-const ref
+- const should be used when the function should only be used to read from the pointer or create a local copy and share ownership
+
+- we can uise a simple raw pointer (get(), which can be NULL) or a plain reference (not NULL) when the function only inspect the managed object without modifying the smart pnt.
+- with the raw pointer we use it to pass it to code that does not support smart pointers
+-> but take care to not delete the raw pointer oor create new smart pointer from it
+- when passing a raw pointer to a function or returning it raw pointers should be considered as owned by the smart pointer
+
+-- return a smart pointer (unique or shared) if the caller needs to manipuilate or access the pointer properties
+- in case the caller just needs the underlying object a raw pointer should be returned
+- smart pointer should always be returned by value
+        1. simpler
+        2. the pointer is only a adress which handles the underlying object (using moving semamntics not the object is copied)
+        3. since C++17 compiler uses ReturnValueOptimization (RVO) to avoid senseless copying / together with copy-elision this even optimize move_semantics & smart pointers
+        4. when returning a shared pnt by value the refcount increases / this is not the case when retuirning by reference
+
+--> to dive deeper see C++ core guidelines on smart pointer (starting R20)
+
+Best practices for passing smart pointers
+----------------------------------------
+
+- list of all variations (without const) of passing objects to a function
+
+void f( object* );  // (a)
+void f( object& ); // (b)
+void f( unique_ptr<object> ); // (c)
+void f( unique_ptr<object>& ); // (d)
+void f( shared_ptr<object> ); // (e)
+void f( shared_ptr<object>& ); // (f)
+
+--> prefered way of to pass object parameters is a) or b)
+- so we don't have to worry about lifetime policy
+- using smart_pnt where we only want to observe the object or manipulkate a member might be overly restrictive
+
+- with raw pointers (and linear code) we can assume that its lifetime will exceed the lifetime of the function parameter
+-> in concurrency this can be different
+
+- if we need to express that there is NO object (pointer == NULL/nullptr) pass a pointer otherwise a reference should be used in most cases
+
+The Object Sink
+---------------
+
+- the prefered way of passing objects to a function so that the function takes ownership of the object is by using method c): void f( unique_ptr<object> )
+-> the unique pointer passed by value from caller to function takes ownership of the pointer of the underlying object
+-> only done with move semantics
+-> after moving the caller will have an invalid unique pointer and the function to which the object now belongs may destroy it or move it somewhere else
+-> using const does not make any sense here as by moving the ownership here definitly modifies the pointer
+
+In & out again
+--------------
+- in some cases we want to modify a unique pointer (not necessarily the underlying object) and reuse it in context of the caller
+-> then method d) void f( unique_ptr<object>& ); will be most suitable
+-> this states that the function might modify the smart pointer (e.g. by redirecting it to another object)
+-> its not recommended to use it for accepting an object only because we should avoid restricting ourselves unnecessarly to a particular object lifetimestrategy from the caller
+-> using const here would also lead there that we could not modify the unique_ptr
+-> in case we want to modify the underlying object use a) : void f( object* )
+
+Sharing ownership
+-----------------
+- if an object will store and share ownership of an object on the heap by using method e) void f( shared_ptr<object> )
+-> the internal reference counter within all shared pointers is incremented
+-> this can be used where the function needs to retain a copy of the shared_ptr and so share the ownership
+-> this is of interest when we need access to shared pointer functions or we must make sure that the managed object is not prematurely deallocated 
+(this can happene.g. in concurrent programming)
+- if the local scope of a shared pointer is not final we can also move shared pointers, no increase of reference count and this is more effective
+-> a disadavntag is that the function will be limited to using only objects that are managed by shared pointers
+
+In & out again 2
+-----------------
+- to modify shared pointers and reuse them in the context of the caller we can use f) void f( shared_ptr<object>& ); 
+-> the managed object uses only a shared_ptr and nothing else
+
+Bjarne on scope
+---------------
+- you get it - use it - give it back (cdor - use stuff - dedor)
