@@ -7,13 +7,13 @@ to the resource to use
 - they help to free programs from memory leaks
 
 - with smart pointers RA occurs at the same time that the object is initialized
-(instantiatet with make_shared or make_unique) 
+(instantiated with make_shared or make_unique) 
 -> all resources for the object are created and initialized within a single line
 
 - in modern c++ raw pointers should only be used in small blocks of code with limited scope, where performance is crucial and ownership is clear
 
 6.3.2.
-- c++1 has introduced 3 types of smart pointers
+- c++11 has introduced 3 types of smart pointers
 
     1. unique pointers (std::unique_ptr), 
     exclusivly ownes a dynamically allocated resource on the heap, no 2nd unique ptr to the same resource is allowed

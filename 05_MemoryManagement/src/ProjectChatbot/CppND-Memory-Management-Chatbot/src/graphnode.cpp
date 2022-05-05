@@ -14,7 +14,7 @@ GraphNode::~GraphNode()
     {
         
         //delete _chatBot; 
-        _chatBot = nullptr;
+        //_chatBot = nullptr;
     }
     
 

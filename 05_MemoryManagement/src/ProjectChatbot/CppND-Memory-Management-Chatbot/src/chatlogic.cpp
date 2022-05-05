@@ -36,7 +36,7 @@ ChatLogic::~ChatLogic()
     if (_chatBot != nullptr)
     {
         
-        delete _chatBot;
+       //delete _chatBot;
 
         // delete all nodes
         for (auto it = std::begin(_nodes); it != std::end(_nodes); ++it)
@@ -49,7 +49,7 @@ ChatLogic::~ChatLogic()
         {
             delete *it;
         }
-        _chatBot = nullptr;
+        //_chatBot = nullptr;
     }
 
     ////
