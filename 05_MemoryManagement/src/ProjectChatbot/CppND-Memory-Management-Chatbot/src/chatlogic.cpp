@@ -235,6 +235,7 @@ void ChatLogic::SetPanelDialogHandle(ChatBotPanelDialog *panelDialog)
 
 void ChatLogic::SetChatbotHandle(ChatBot *chatbot)
 {
+    std::cout << "SetChatbotHandle" << std::endl;
     _chatBot = chatbot;
 }
 

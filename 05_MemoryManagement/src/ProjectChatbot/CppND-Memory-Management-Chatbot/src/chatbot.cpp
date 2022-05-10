@@ -44,11 +44,66 @@ ChatBot::~ChatBot()
     
 }
 
-//// STUDENT CODE
+//// DONE
 ////
 
+// 1. Copy ctor
+ChatBot::ChatBot(const ChatBot &source)
+{
+  // copy image from source into new heap memory adress
+  _image = new wxBitmap();
+  *_image = *source._image;
+  std::cout << "ChatBot Copy Constructor" << std::endl;
+    
+}
+
+// 2. Copy Assignment ctor
+ChatBot& ChatBot::operator=(const ChatBot &source)
+{
+    std::cout << "ChatBot Copy Assignment Constructor" << std::endl;
+    std::cout << "Assigning content of instance " << &source << " to instance " << this << std::endl;
+    
+    if(this == &source)
+    {
+        return *this; 
+    }
+
+    delete _image;
+    _image = new wxBitmap();
+    *_image = *source._image;
+    
+    return *this; 
+}
+    
+// 4. Move ctor
+ChatBot::ChatBot(ChatBot &&source)
+{
+    std::cout << "ChatBot Move COnstructor" << std::endl;
+    std::cout << "Moving (cdor) instance of " << &source << " to instance " << this << std::endl;
+    _image = source._image;
+    source._image = NULL; // Attention: wxWidgets used NULL and not nullptr
+}
+
+// 5. Move Assignemnet ctor
+ChatBot& ChatBot::operator=(ChatBot &&source)
+{
+    std::cout << "ChatBot Move Assignment" << std::endl;
+    std::cout << "Moving (assign) instance" << &source << " to instance " << this << std::endl;
+
+    if(this == &source)
+    {
+        return *this; 
+    }
+
+    delete _image;
+    _image = source._image;
+
+    source._image = NULL; // Attention: wxWidgets used NULL and not nullptr
+    return *this; 
+}
+
 ////
-//// EOF STUDENT CODE
+//// EOF STDT CODE
 
 void ChatBot::ReceiveMessageFromUser(std::string message)
 {
