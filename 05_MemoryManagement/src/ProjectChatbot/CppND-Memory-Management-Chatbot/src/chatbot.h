@@ -26,7 +26,7 @@ public:
     ChatBot();                     // constructor WITHOUT memory allocation
     ChatBot(std::string filename); // constructor WITH memory allocation
     
-    //// DONE
+    //// DONE Task 2
     ////
     // 1. Copy ctor
     ChatBot(const ChatBot &source);

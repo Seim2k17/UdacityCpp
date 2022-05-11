@@ -1,5 +1,6 @@
 #include "graphedge.h"
 #include "graphnode.h"
+#include <iostream>
 
 GraphNode::GraphNode(int id)
 {
@@ -8,18 +9,19 @@ GraphNode::GraphNode(int id)
 
 GraphNode::~GraphNode()
 {
-    //// STUDENT CODE
+    //// DONE
     ////
+    /*
     if(_chatBot != nullptr)
     {
         
-        //delete _chatBot; 
-        //_chatBot = nullptr;
+        delete _chatBot; 
+        _chatBot = nullptr;
     }
-    
+    */
 
     ////
-    //// EOF STUDENT CODE
+    //// EOF STDT CODE
 }
 
 void GraphNode::AddToken(std::string token)
@@ -37,18 +39,18 @@ void GraphNode::AddEdgeToChildNode(GraphEdge *edge)
     _childEdges.push_back(edge);
 }
 
-//// STUDENT CODE
+//// STUDENT CODE Task 2
 ////
-void GraphNode::MoveChatbotHere(ChatBot *chatbot)
+void GraphNode::MoveChatbotHere(ChatBot &&chatBot)
 {
-    _chatBot = chatbot;
-    _chatBot->SetCurrentNode(this);
+    std::cout << "movechatbot " << std::endl;
+    _chatBot = std::move(chatBot);
+    _chatBot.SetCurrentNode(this);
 }
 
 void GraphNode::MoveChatbotToNewNode(GraphNode *newNode)
 {
-    newNode->MoveChatbotHere(_chatBot);
-    _chatBot = nullptr; // invalidate pointer at source
+    newNode->MoveChatbotHere(std::move(_chatBot));
 }
 ////
 //// EOF STUDENT CODE
