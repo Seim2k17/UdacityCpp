@@ -1,6 +1,7 @@
 #include "graphedge.h"
 #include "graphnode.h"
 #include <iostream>
+#include <memory>
 
 GraphNode::GraphNode(int id)
 {
@@ -34,12 +35,12 @@ void GraphNode::AddEdgeToParentNode(GraphEdge *edge)
     _parentEdges.push_back(edge);
 }
 
-void GraphNode::AddEdgeToChildNode(GraphEdge *edge)
+void GraphNode::AddEdgeToChildNode(std::unique_ptr<GraphEdge> edge)
 {
-    _childEdges.push_back(edge);
+    _childEdges.push_back(std::move(edge));
 }
 
-//// STUDENT CODE Task 2
+//// DONE Task 2
 ////
 void GraphNode::MoveChatbotHere(ChatBot &&chatBot)
 {
@@ -53,15 +54,15 @@ void GraphNode::MoveChatbotToNewNode(GraphNode *newNode)
     newNode->MoveChatbotHere(std::move(_chatBot));
 }
 ////
-//// EOF STUDENT CODE
+//// EOF STDT CODE
 
 GraphEdge *GraphNode::GetChildEdgeAtIndex(int index)
 {
-    //// STUDENT CODE
+    //// DONE CODE Task 4
     ////
 
-    return _childEdges[index];
+    return _childEdges[index].get();
 
     ////
-    //// EOF STUDENT CODE
+    //// EOF STDT CODE
 }
