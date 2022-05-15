@@ -50,7 +50,7 @@ public:
     //// DONE CODE Task 2
     ////
 
-    void MoveChatbotHere(ChatBot &&chatBot);
+    void MoveChatbotHere(ChatBot chatBot);
 
     ////
     //// EOF STDT CODE

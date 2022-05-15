@@ -91,7 +91,16 @@ ChatBot::ChatBot(ChatBot &&source)
     std::cout << "<<<ChatBot Move Constructor>>>" << std::endl;
     std::cout << "Moving (cdor) instance of " << &source << " to instance " << this << std::endl;
     _image = source._image;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    _chatLogic->SetChatbotHandle(this);
+
+    // delete source(s) 
     source._image = NULL; // Attention: wxWidgets used NULL and not nullptr
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
+
 }
 
 // 5. Move Assignemnet ctor
