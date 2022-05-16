@@ -1,0 +1,109 @@
+
+1.1. introduction
+
+- until now the execution order was sequentiell
+
+- concurrency: 
+    - use multiple parts of execution in a program which run in parallel
+    - a part is called thread, using multiple parts -> multithreading
+    - = a system perform multiple independent task in parallel (multitasking)
+    - but we dont need multiple cores, we often gets the illusion of parallelism (fast switching btw. tasks)
+    - true concurrency needs parallel architecture (multiple cores==hardware concurrency)
+
+1.2. processes and threads
+
+- first to use concurrency we need to divide the programm in multiple separate processes that communicate through signals etc.
+- one of a advantage is that the processes can easily run over a distributed architecture (e.g network)
+
+- a parallel path of execution runs concurrently == asynchronous communication
+
+                synchronous                     
+                
+        main()           thread()       
+          |                 |           
+          |                 |
+          |------func()---->| 
+          x                 |
+          x                 |
+          x                 |
+          x<-----return()---|
+          |                 |
+          |                 |
+
+                asynchronous
+
+        main()            hread()
+          |                 |
+          |                 |
+          |------func()---->| 
+          |                 |
+          |                 |
+          |                 |
+          |                 |
+          |                 |
+          |                 |
+
+processes vs. threads
+
+- process is a task controlled by the OS
+- controlled through certain actions which sets the process into defined states
+
+    * Ready
+        - after creation a process enters the ready state & loaded into memory
+        - now ready to run and waits for CPU time
+        - stored in a queue managed by OS
+
+    * Running
+        - OS selected process for execution
+        - process is executed on one or more CPU core
+
+    * Blocked
+        - process is waiting for an event (e.g. wait for available system ressource or completion of I/O operation)
+
+    * Terminated
+        - either completed execution or being killed
+        - underlying program is no longer executing but process remains in the process table as a zombie "waiting" to be removed
+
+    * Ready suspended
+        - initially ready processes swapped out of main memory & placed onto external storage
+        - process transist to ready whenever its moved back to main memory
+
+    * Block suspended
+        - also a blocked process can be swapped out of main memory and set to Blocked again if its moved to main memory again
+
+- processes are managed by the scheduler of the OS
+- scheduler can let a process run until it ends or blocks (non-interrupting scheduler), or ensure that the currently running process is interrupted at some time
+- it then can switch back and forth between different active processes (interrupting scheduler), alternately assigning them CPU time
+--> typical in modern OS
+
+- since administration of processes is computationally taxing, the OS support a ressource friendly way of concurrent operations: threads
+
+- a thread represents a concurrent execution unit within a process
+- in contrast to full-processes threads are characterized as light weight processes (LWP)
+-> easier to create & destroy
+- creation of a thread is up to 100x faster -> good when need for concurrent operations changes dynamically
+- threads exists within processes and share their ressources
+- a process can contain several threads or if no parallel processing is provided -> one single thread / process
+
+- each process has its own memory space, while a thread does not require a new adress space to be created
+-> all threads in a process can access its shared memory
+
+- thread also share other OS dependent resources like processors, files & network connections
+-> management overhead is less than for processes
+-> but are not protected against each other & much carefully synchronize when accessing the shared process to avoid conflicts
+
+- for threads there are also similar states (New,Runnable,Blocked, Terminated)
+
+    1.New : 
+            - once it has been created a thread goes to New
+            - until it is actually running, it will not take any CPU resources
+
+    2.Runnable:
+            - in this state, a thread might actually be running or it might be ready to run at any instant of time. 
+            - it is the responsibility of the thread scheduler to assign CPU time to the thread
+    
+    3. Blocked : 
+            - A thread might be in this state, when it is waiting for I/O operations to complete
+            - if blocked, a thread cannot continue its execution any further until it is moved to the runnable state again
+            - it will not consume any CPU time in this state
+            - the thread scheduler is responsible for reactivating the thread
