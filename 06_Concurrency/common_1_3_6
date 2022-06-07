@@ -154,3 +154,54 @@ int main()
 
 - when calling a function with variadic templates the arguments are by default either moved or copied (depending if they are rvalues or lvalues)
 - if we want to move lvalues we can call std::move
+
+- if a thread function takes a reference in the parameter list and passing a string variable to the thread function
+-> we need to explicitly mark it as a reference, so the compiler willl treat it as such
+-> std::ref (see 14_variadic_templates_ref.cpp)
+
+- to call member functions for threads, the std::thread function requires an additional argument
+    // when calling member function from a object passed by value (v1) -> a new copy is created and does not affect the original living in the main thread
+    std::thread t1 = std::thread(&Vehicle::addID, v1, 1); 
+    // when calling a member function from a object passed by ref, changes to its _id variable will also be visible in main
+    std::thread t2 = std::thread(&Vehicle::addID, &v2, 2);
+
+- we have to ensure that the existence of v2 outlives the completion of the thread t2
+-> otherwise there will be an attempt to access an invalidated memory address
+-> we can use a heap allocated object and a ref counted pointer like std::shared_ptr tio ensure that the object lioves as long as it takes for the thread to finish
+
+Running multiple threads
+------------------------
+
+- threads follows a basic concept called "fork-join-parallelism"
+-> simple three step pattern
+    1. split flow of execution into a parallel thread ("fork")
+    2. perform some work in both the main thread & parallel thread
+    3. wait for parallel thread to finish & unite the split flow of execution again ("join")
+
+- in main thread the program flow is forked in to 3 branches -> the branches beside the main thread are called worker thread (some work is performed there ...)
+- once the work is completed the flow ofd the execution is united again in the main function 
+-> using join() as a barrier
+
+- to create a number of threads we can add them to a vector, so wqe can loop over it and call join on all threads
+-> but we need to use emplace_back() instead of push_back()
+- push_back() makes a copy of the thread -> but threads can be duplicated
+- emplace_back() uses move semantics by default!
+
+but here we need to be careful (18_multiple_threads_1.cpp) as the output is st like:
+    Hello from Worker thread #Hello from Worker thread #140244337690368140244354475776
+    Hello from Worker thread #
+    terminate called without an active exception
+    Hello from Worker thread #140244238202624
+    Aborted
+
+--> 1.the order in which threads are executed is non-deterministic -> every time a program is exectuted the order could be different
+    2. threads may get preempted in the middle of execution and another thread may be selected to run
+
+- a program may run correctly for thousands of times and suddenly there might be a problem
+-> this can make debugging very hard, because reproduction can be very hard
+
+A 1st concurrency bug
+---------------------
+
+
+
