@@ -202,6 +202,6 @@ but here we need to be careful (18_multiple_threads_1.cpp) as the output is st l
 
 A 1st concurrency bug
 ---------------------
-
+see 19_concurrencybug.cpp
 
 

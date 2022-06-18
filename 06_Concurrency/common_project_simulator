@@ -1,0 +1,70 @@
+- to  use this from a shared_pointer one need to derive the wanted class also from std::enable_shared_from_this<CLASSTYPE>
+
+-> to return the shared pointer one need do:
+
+std::shared_ptr<Vehicle> get_shared_this() { return shared_from_this(); };
+
+Promises & futures:
+---------------------
+
+- to pass data from the worker thread to the main thread we can use the concept of promises & future (send / receive end)
+
+- to pass data from the main thread to the worker thread we can use variadic templates or Lambdas
+
+- but to pass information from the worker thread back to the parent thread we need to adhere a strict synchronization protocol
+-> single use channel  btw. threads: sending end of the channel: promise / receiving end: future
+
+- std::promise can store an value or exception that will aquired by later time by a std::future
+- std::promise - objects are meant to be used only once
+
+-to obtain the corresponding future we need to call .get_future() at the promise object
+- promises and futures are the types of communication we want to use to pass data between threads
+
+- promises can not be copied because the promise-future concept is a 2 point communication channel for 1time use
+-> ergo we need to use std::move
+
+- with set_value() on the promise object to set the value
+- and .get() on the future object to retrieve this value()
+- this will block until data is available -> as soon as set_value has been called on the promise
+-> if the result is movable it will be moved - otherwise is will be copied
+
+- if set_value is called before get() -> get() will return data without any delay
+- after get() has been called once, the future is no longer usable
+-> this makes sense as normal mode of data exchange works with std::move() -> data is not available after first call, if called a second time an exception is thrown
+
+--> see 21_promise_future.cpp
+
+
+Quiz
+----
+
+- st its useful to separate the waiting for the content from the retrieving
+- future allows this by using the wait() function -> this blocks until th future is ready
+-> when it returns it is guaranteed that the data is reqady -> us get() to retrieve without delay
+-> similar is wait_for() metzhod which takes a time duration as input and also waits for a result to become ready
+
+-> see 22_quiz_get_vs_wait.cpp
+
+Exceptions
+-----
+
+to pass exception over the future promise channel the future sets  an exception rather than an value
+
+ catch (...)
+    {
+        prms.set_exception(std::current_exception());
+    }
+
+- so we can catch any exception & with e.what() we can get the message on the exception()
+
+- disadvantages of promise/future
+ 1. one direction channel
+ 2. one time only usage
+
+
+ Tasks vs. thread -> starting with async
+ ----------------
+
+ - to avoid much boilerplate-code for small functionality we can use tasks instead of threads (using std: async)
+ - async generates a task -> system decides if to run in parallel or async
+ -> the code can be parallized but the system decides
