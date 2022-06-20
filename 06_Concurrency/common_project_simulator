@@ -68,3 +68,39 @@ to pass exception over the future promise channel the future sets  an exception 
  - to avoid much boilerplate-code for small functionality we can use tasks instead of threads (using std: async)
  - async generates a task -> system decides if to run in parallel or async
  -> the code can be parallized but the system decides
+
+ - to uses async we ommit the promise and try/catch code in the thread function so that it looks like a normal function
+ - we also replace std::thread with std::async which returns a future / nor promise is needed anymore
+ - we still calling get() on the future but we dont need to call .join
+ - with async the thread destructur will be called automatically -> this reduces the risk of a concurrency bug
+
+ - with async we can use launch parameters so that we have influence if the cxode will be executed synchronously or async
+
+ -> std::future<double> ftr = std::async(std::launch::deferred, ...)
+
+ std::launch::deferred - synchronously
+ std::launch::async - asynchronously (in parallel)
+ std::async(std::launch::deferred | std::launch::async - let the system decide if sync or async execution of the program
+ (st parallel execution even make runtime performance worse)
+
+(25_async_thread_ids.cpp))
+ - std::async internally it creates a promise. gets a future from it and runs a template function that takes the promise, calls our function & then sets the value or th exception
+
+ - the code with std::async is more or less oidentical to the code, when using std::thread but its hidden from us, created by the compiler
+ -> cleaner code and async makes it possible to control the amount of concurrency
+
+ - to let the system decide allow us to prevent an overload of threads which could slow down the system
+ -> if too many threads are used the increased resource conmsumption would outweight the advantages of parallelism and slow down the program
+ -> the system choses threads carefully in a balanced way that optimizes runtrime performance
+
+ Task-based concurrency (2.3)
+ ---------------------
+
+- determining the optional number of threads to use is a hard problem
+-> depends usually on the number of available cores, wheter it makes sense to execute code as a thread or in sequence
+
+- by using async (=== tasks) let the system decide whether to execute the code sequentially or as 
+ .....
+
+
+ Threads and tasks are used for different problems. Threads have more to do with latency. When you have functions that can block (e.g. file input, server connection), threads can avoid the program to be blocked, when e.g. the server is waiting for a response. Tasks on the other hand focus on throughput, where many operations are executed in paralle
