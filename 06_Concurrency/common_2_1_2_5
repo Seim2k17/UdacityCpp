@@ -1,0 +1,216 @@
+- to  use this from a shared_pointer one need to derive the wanted class also from std::enable_shared_from_this<CLASSTYPE>
+
+-> to return the shared pointer one need do:
+
+std::shared_ptr<Vehicle> get_shared_this() { return shared_from_this(); };
+
+Promises & futures:
+---------------------
+
+- to pass data from the worker thread to the main thread we can use the concept of promises & future (send / receive end)
+
+- to pass data from the main thread to the worker thread we can use variadic templates or Lambdas
+
+- but to pass information from the worker thread back to the parent thread we need to adhere a strict synchronization protocol
+-> single use channel  btw. threads: sending end of the channel: promise / receiving end: future
+
+- std::promise can store an value or exception that will aquired by later time by a std::future
+- std::promise - objects are meant to be used only once
+
+-to obtain the corresponding future we need to call .get_future() at the promise object
+- promises and futures are the types of communication we want to use to pass data between threads
+
+- promises can not be copied because the promise-future concept is a 2 point communication channel for 1time use
+-> ergo we need to use std::move
+
+- with set_value() on the promise object to set the value
+- and .get() on the future object to retrieve this value()
+- this will block until data is available -> as soon as set_value has been called on the promise
+-> if the result is movable it will be moved - otherwise is will be copied
+
+- if set_value is called before get() -> get() will return data without any delay
+- after get() has been called once, the future is no longer usable
+-> this makes sense as normal mode of data exchange works with std::move() -> data is not available after first call, if called a second time an exception is thrown
+
+--> see 21_promise_future.cpp
+
+
+Quiz
+----
+
+- st its useful to separate the waiting for the content from the retrieving
+- future allows this by using the wait() function -> this blocks until th future is ready
+-> when it returns it is guaranteed that the data is reqady -> us get() to retrieve without delay
+-> similar is wait_for() metzhod which takes a time duration as input and also waits for a result to become ready
+
+-> see 22_quiz_get_vs_wait.cpp
+
+Exceptions
+-----
+
+to pass exception over the future promise channel the future sets  an exception rather than an value
+
+ catch (...)
+    {
+        prms.set_exception(std::current_exception());
+    }
+
+- so we can catch any exception & with e.what() we can get the message on the exception()
+
+- disadvantages of promise/future
+ 1. one direction channel
+ 2. one time only usage
+
+
+ Tasks vs. thread -> starting with async
+ ----------------
+
+ - to avoid much boilerplate-code for small functionality we can use tasks instead of threads (using std: async)
+ - async generates a task -> system decides if to run in parallel or async
+ -> the code can be parallized but the system decides
+
+ - to uses async we ommit the promise and try/catch code in the thread function so that it looks like a normal function
+ - we also replace std::thread with std::async which returns a future / nor promise is needed anymore
+ - we still calling get() on the future but we dont need to call .join
+ - with async the thread destructur will be called automatically -> this reduces the risk of a concurrency bug
+
+ - with async we can use launch parameters so that we have influence if the cxode will be executed synchronously or async
+
+ -> std::future<double> ftr = std::async(std::launch::deferred, ...)
+
+ std::launch::deferred - synchronously
+ std::launch::async - asynchronously (in parallel)
+ std::async(std::launch::deferred | std::launch::async - let the system decide if sync or async execution of the program
+ (st parallel execution even make runtime performance worse)
+
+(25_async_thread_ids.cpp))
+ - std::async internally it creates a promise. gets a future from it and runs a template function that takes the promise, calls our function & then sets the value or th exception
+
+ - the code with std::async is more or less oidentical to the code, when using std::thread but its hidden from us, created by the compiler
+ -> cleaner code and async makes it possible to control the amount of concurrency
+
+ - to let the system decide allow us to prevent an overload of threads which could slow down the system
+ -> if too many threads are used the increased resource conmsumption would outweight the advantages of parallelism and slow down the program
+ -> the system choses threads carefully in a balanced way that optimizes runtrime performance
+
+ Task-based concurrency (2.3)
+ ---------------------
+
+- determining the optional number of threads to use is a hard problem
+-> depends usually on the number of available cores, wheter it makes sense to execute code as a thread or in sequence
+
+- by using async (=== tasks) let the system decide whether to execute the code sequentially or as a thread
+- with tasks the user can decide what CAN be run in parrallel and the system decide at runtime what WILL be run in parallel
+
+- internally this is achieved with thread-pools (number of threads based on cores/processor & by using wirk-stealing queues where tasks are re-distributed among tthe avbailable processesor dynamically
+
+
+- when a core is oversubscribed with tasks that are waiting to be executed and others are running idle a watchdig program regularly monitors the amount of work performed by each cpu and redistributes if needed
+-> then the task would be shifted (or stolen) from the busy core(s) & added to available cores so that their idle time is reduced
+-> this can only work if parallelism is explicitly described in the program by the programmer
+
+- with task the system cares of details, with threads the programmer needs to do this
+- threads are usually more heivy weighted as they are generated and managed by the OS whereas tasks are more leightweighted as they will be using a  pool of already created threads from the "thread pool"
+- threads and tasks are used for different problems
+- threads have more to do with latency. When you have functions that can block (e.g. file input, server connection), threads can avoid the program to be blocked, when e.g. the server is waiting for a response. 
+- Tasks on the other hand focus on throughput, where many operations are executed in parallel
+
+Advantage of parallelism
+----------------------
+
+see 26_concurrency_tests.cpp
+
+- It is a general advantage if computations are performed in parallel: It must be carefully weighed with regard to the computational effort whether parallelization makes sense.
+-> esp. at smaller parts it could make sense to not use async
+
+- with async its basically easier to use, we dont need to think of implementation details, don't need to call .join(), no need for promises
+-> one future can be used for data exchange and as a barrier
+
+- sometimes threads can give us more control
+
+- async is designed as a simplest way to uses concurrency
+
+
+Data Races
+-----------
+
+- one of the worst enemies in concurrent programming and one of th primary sources of error
+- they occur when two concurrent threads are accessing the same memory location while at least one is modifying (the other is e.g. reading) -> the value at the mem location is undefined
+- dep. on the scheduler the 2nd thread will be executed at an unknown point in time and get different data at the mem location with each execution
+- depending on the type of program the result can be a crash or security breach (data is read that was not meant to be read)
+-> data race, 2 threads are racing to get access to a memory location depending on the result of the race
+- one way is to carefully sync the two thrteads using either join() or the promise-future concept
+- data races are bugs
+
+- see 27_data_races_1.cpp
+-> for atomic datatypes we can passing data to athread by value to avoid data_races
+
+- but when passing complex datastructures there are sometimes pointer variables hidden within -> that point to a potentially shared data buffer
+- this might cause a data race even if the programmer think with copying this will  preempt it.
+
+- so even if pointer is duplicated it still points to the same adress
+- its value (memory location) has not changed
+
+- data race errors might gi unnoticed for a long time - after shipping the software -> treacherous error
+
+- std classes implement therefore deep copy behavior by default (like std::vector)
+- but with created classes / proprietary data types this is not guaranteed
+-> so to tell if a datastructure can be safely passed see its implementation
+->  are there pointers somewhere
+-> copy cdor / assignment cdor correctly
+-> for subobjects look for deep copies everywhere
+
+- one of the concepts of OOP - information hiding - prevents us often to take a deeper look, we only see the interface
+
+Overwriting the copy constructor
+--------------------------------
+
+- the problem with passing a proprietary class is the standardcopy cdor
+-> it makes a 1:1 copy of all data members including pointers to objects (==shallow copy)
+-> to ensure correct copy by vbalue behavior we need to override the copy ctor and make deep copies
+
+Passing data using move semantics
+--------------------------------
+
+- customized copy ctor are time / memory consuming
+- we can use move semantics to implement a more efficient way of safely passing data to a thread
+
+- we need a move constructor which enables the resources owned by an rvalue object to be moved into an lvalue without physically copying it
+- Rvalue references support the implementation of move semantics, which enables the programmer to write code that transfers resources (such as dynamically allocated memory) from one object to another
+- Copy and assignment operations whith rvalues sources automatically take advantage of move semantics
+- Unlike the default copy constructor, the compiler does not provide a default move constructor
+
+-> move ctor steps
+    1. define empty constructor with rvalue refs to the class type
+    
+        Vechicle(Vehicle && src) {...}
+
+    2. assign class data members from the source
+    
+        Vechicle(Vehicle && src) {
+            _id = src.getID();
+            _name = new std::string(src.getName());
+        }
+
+    3. assign data members of the source to default values
+
+        src.setID(0);
+        src.setName("DefaultName");
+
+- when launching the thread the vehicle obkect can be passed using std::move() -> calls the move constructor and invalidatre the original object in tthe main thread
+
+Move semenatics & uniqueness
+------------------
+
+- passing by value is usually safe when a deep copy is made of all data strutures within the object that is to be passed
+- with move semantics we can additionally use the notion of uniqueness to prevent data races
+
+- furthermore: by using a unique ptr instead of a raw pointer we can make sure that data races are avoidable
+(see 31_data_race_unique.ptr.cpp) -> segfault/exception in main when try using v0.getName() ...
+
+****************************************************************************************************
+* -> IMPORTANT: the key to thread safety is to use move semanticas in conjunction with uniqueness! *
+* ->Pointers to objects that are moved btw. threads needs to be unique !!!                         *
+****************************************************************************************************
+
+- delaying functions like sleep_for can expose data_races

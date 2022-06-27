@@ -1,0 +1,10 @@
+Purpose
+----------
+
+- vehicles have to wait at a n intersection until its their turn to drive
+- we need to establish a one time communication channel btw. vehicles and connections using promises/future
+-> we need a proper waiting mechanism so that at one point of time only a single vehicle is att the intersection
+
+
+- proceed vid1:8:10
+

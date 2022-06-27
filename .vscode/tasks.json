@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+            {
+                    //"type": "cppbuild",
+                    "type": "shell",
+                    "label": "g++ build active file",
+                    "command": "cd ~/UdacityCpp//04_SystemMonitor/CppND-System-Monitor-Project-Updated; cd build && cmake -DCMAKE_BUILD_TYPE=Debug .. && make"
+            }
+    ]
+}
