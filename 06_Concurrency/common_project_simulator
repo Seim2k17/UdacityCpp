@@ -99,8 +99,102 @@ to pass exception over the future promise channel the future sets  an exception 
 - determining the optional number of threads to use is a hard problem
 -> depends usually on the number of available cores, wheter it makes sense to execute code as a thread or in sequence
 
-- by using async (=== tasks) let the system decide whether to execute the code sequentially or as 
- .....
+- by using async (=== tasks) let the system decide whether to execute the code sequentially or as a thread
+- with tasks the user can decide what CAN be run in parrallel and the system decide at runtime what WILL be run in parallel
+
+- internally this is achieved with thread-pools (number of threads based on cores/processor & by using wirk-stealing queues where tasks are re-distributed among tthe avbailable processesor dynamically
 
 
- Threads and tasks are used for different problems. Threads have more to do with latency. When you have functions that can block (e.g. file input, server connection), threads can avoid the program to be blocked, when e.g. the server is waiting for a response. Tasks on the other hand focus on throughput, where many operations are executed in paralle
+- when a core is oversubscribed with tasks that are waiting to be executed and others are running idle a watchdig program regularly monitors the amount of work performed by each cpu and redistributes if needed
+-> then the task would be shifted (or stolen) from the busy core(s) & added to available cores so that their idle time is reduced
+-> this can only work if parallelism is explicitly described in the program by the programmer
+
+- with task the system cares of details, with threads the programmer needs to do this
+- threads are usually more heivy weighted as they are generated and managed by the OS whereas tasks are more leightweighted as they will be using a  pool of already created threads from the "thread pool"
+- threads and tasks are used for different problems
+- threads have more to do with latency. When you have functions that can block (e.g. file input, server connection), threads can avoid the program to be blocked, when e.g. the server is waiting for a response. 
+- Tasks on the other hand focus on throughput, where many operations are executed in parallel
+
+Advantage of parallelism
+----------------------
+
+see 26_concurrency_tests.cpp
+
+- It is a general advantage if computations are performed in parallel: It must be carefully weighed with regard to the computational effort whether parallelization makes sense.
+-> esp. at smaller parts it could make sense to not use async
+
+- with async its basically easier to use, we dont need to think of implementation details, don't need to call .join(), no need for promises
+-> one future can be used for data exchange and as a barrier
+
+- sometimes threads can give us more control
+
+- async is designed as a simplest way to uses concurrency
+
+
+Data Races
+-----------
+
+- one of the worst enemies in concurrent programming and one of th primary sources of error
+- they occur when two concurrent threads are accessing the same memory location while at least one is modifying (the other is e.g. reading) -> the value at the mem location is undefined
+- dep. on the scheduler the 2nd thread will be executed at an unknown point in time and get different data at the mem location with each execution
+- depending on the type of program the result can be a crash or security breach (data is read that was not meant to be read)
+-> data race, 2 threads are racing to get access to a memory location depending on the result of the race
+- one way is to carefully sync the two thrteads using either join() or the promise-future concept
+- data races are bugs
+
+- see 27_data_races_1.cpp
+-> for atomic datatypes we can passing data to athread by value to avoid data_races
+
+- but when passing complex datastructures there are sometimes pointer variables hidden within -> that point to a potentially shared data buffer
+- this might cause a data race even if the programmer think with copying this will  preempt it.
+
+- so even if pointer is duplicated it still points to the same adress
+- its value (memory location) has not changed
+
+- data race errors might gi unnoticed for a long time - after shipping the software -> treacherous error
+
+- std classes implement therefore deep copy behavior by default (like std::vector)
+- but with created classes / proprietary data types this is not guaranteed
+-> so to tell if a datastructure can be safely passed see its implementation
+->  are there pointers somewhere
+-> copy cdor / assignment cdor correctly
+-> for subobjects look for deep copies everywhere
+
+- one of the concepts of OOP - information hiding - prevents us often to take a deeper look, we only see the interface
+
+Overwriting the copy constructor
+--------------------------------
+
+- the problem with passing a proprietary class is the standardcopy cdor
+-> it makes a 1:1 copy of all data members including pointers to objects (==shallow copy)
+-> to ensure correct copy by vbalue behavior we need to override the copy ctor and make deep copies
+
+Passing data using move semantics
+--------------------------------
+
+- customized copy ctor are time / memory consuming
+- we can use move semantics to implement a more efficient way of safely passing data to a thread
+
+- we need a move constructor which enables the resources owned by an rvalue object to be moved into an lvalue without physically copying it
+- Rvalue references support the implementation of move semantics, which enables the programmer to write code that transfers resources (such as dynamically allocated memory) from one object to another
+- Copy and assignment operations whith rvalues sources automatically take advantage of move semantics
+- Unlike the default copy constructor, the compiler does not provide a default move constructor
+
+-> move ctor steps
+    1. define empty constructor with rvalue refs to the class type
+    
+        Vechicle(Vehicle && src) {...}
+
+    2. assign class data members from the source
+    
+        Vechicle(Vehicle && src) {
+            _id = src.getID();
+            _name = new std::string(src.getName());
+        }
+
+    3. assign data members of the source to default values
+
+        src.setID(0);
+        src.setName("DefaultName");
+
+- when launching the thread the vehicle obkect can be passed using std::move() -> calls the move constructor and invalidatre the original object in tthe main thread
