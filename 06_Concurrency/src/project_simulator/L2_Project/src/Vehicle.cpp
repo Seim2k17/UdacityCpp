@@ -79,6 +79,11 @@ void Vehicle::drive()
                 // Then, wait for the data to be available before proceeding to slow down.
 
                 // slow down and set intersection flag
+
+                auto futureAccessGranted = std::async(std::launch::async, &Intersection::addVehicleToQueue,_currDestination,get_shared_this());
+
+                futureAccessGranted.wait();
+
                 _speed /= 10.0;
                 hasEnteredIntersection = true;
             }
