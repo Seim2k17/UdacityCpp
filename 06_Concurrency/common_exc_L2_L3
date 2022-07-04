@@ -8,3 +8,9 @@ Purpose
 - to wait if a future is ready we create it as a result of async and then get it with get() -> this will only get it when the future is ready to use .....
 
 -> does .get() has the same function as .wait() (blockingmechanism)  + getting it ?
+
+- with.set_value() you execute the promise (see L2 / solution) ->we pass the result beack when its available
+
+L3-Mutex
+---------
+

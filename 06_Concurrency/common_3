@@ -1,0 +1,36 @@
+
+MUTEX
+--------
+
+-disdavantage of promise :
+    - one use only
+    - one directional
+    -> until now ots not possible to freely exchange data infomartion btw. shared memory
+
+- with mutexes/locks you can protect shared data from concurreent access and ensure that data can safely be written/tread from location
+
+-> new issue arise: DEAD LOCKS
+
+-> it would be much easiere to mutually access the shared mem location directyl (here: interection waiting queue)
+-> concept of MUTuallyEXclusion does this
+--> we can seafely lock a ressource , modify and the unlock it again if we're done
+
+Using a Mutex To Protect Shared Data¶
+--------------------------
+
+- Mutex entity:
+
+- until now the moethiods we used to pass data btw. threads were short-term
+-> we passed an argument (the promise) from a parent thread to a worker thread, tthen the result back to the parent thread (via the future) once it has become available
+--> non permanent communication for one-time usage
+
+- to avoid data races we need forego (verzichten) sahred data or use it in read-only access without mutating the data
+- with MUTEX we want to establish a stable long term communication channel that allows for sharing and mutation
+- ideally this should be done like in a radio channel ("over".. others turn) where sender and receiver can ttake turns in transmitting their data
+- data races requires simultanious access from 2 threads
+-> if we can guarantee that only a single thread at a time can access a particular memory location data races would not occur
+
+-> therefore we need to establish a communication protocol
+
+- a mutex is not the solution to the data race problem but an enabler for a thread safe communication
+
