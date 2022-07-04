@@ -1,3 +1,5 @@
 /src/project_simulator/L1_Project/build/
+/src/project_simulator/L2_Project/build/*
+/src/project_simulator/L2_Project/build/CMakeFiles/*
 /build
 /.vscode
