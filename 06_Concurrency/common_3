@@ -34,3 +34,22 @@ Using a Mutex To Protect Shared Data¶
 
 - a mutex is not the solution to the data race problem but an enabler for a thread safe communication
 
+            shared mem
+                |
+              access
+                |
+underlock------mutex---x--is bloicked
+    |                       |
+ thread 1                 thread 2
+
+
+- assuming we have a piece of memory we want to protect from simultaneous access
+-> we can assign a mutex to be the guardian of this memory
+- a mutex is bound to tthe memory it protects
+- a thread 1 whi wants toi access the protected memory mustt "lock" the mutex first
+- when thread 1 is under lock a thread 2 is blocked from access to the shared variable
+- it can acquire the lock is is suspended by the system
+
+- once reading or writing of thread1 is complete it must unlock the mutex so that tthread 2 can access the memory location
+- the code under lock is often called "critical section"
+- important : also read only access has to lock the mutex to prevent data_race (if another thread wantts tto modify)
