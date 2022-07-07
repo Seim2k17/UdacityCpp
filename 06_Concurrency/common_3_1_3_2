@@ -1,0 +1,155 @@
+
+MUTEX
+--------
+
+-disdavantage of promise :
+    - one use only
+    - one directional
+    -> until now ots not possible to freely exchange data infomartion btw. shared memory
+
+- with mutexes/locks you can protect shared data from concurreent access and ensure that data can safely be written/tread from location
+
+-> new issue arise: DEAD LOCKS
+
+-> it would be much easiere to mutually access the shared mem location directyl (here: interection waiting queue)
+-> concept of MUTuallyEXclusion does this
+--> we can seafely lock a ressource , modify and the unlock it again if we're done
+
+Using a Mutex To Protect Shared Data¶
+--------------------------
+
+- Mutex entity:
+
+- until now the moethiods we used to pass data btw. threads were short-term
+-> we passed an argument (the promise) from a parent thread to a worker thread, tthen the result back to the parent thread (via the future) once it has become available
+--> non permanent communication for one-time usage
+
+- to avoid data races we need forego (verzichten) sahred data or use it in read-only access without mutating the data
+- with MUTEX we want to establish a stable long term communication channel that allows for sharing and mutation
+- ideally this should be done like in a radio channel ("over".. others turn) where sender and receiver can ttake turns in transmitting their data
+- data races requires simultanious access from 2 threads
+-> if we can guarantee that only a single thread at a time can access a particular memory location data races would not occur
+
+-> therefore we need to establish a communication protocol
+
+- a mutex is not the solution to the data race problem but an enabler for a thread safe communication
+
+            shared mem
+                |
+              access
+                |
+underlock------mutex---x--is bloicked
+    |                       |
+ thread 1                 thread 2
+
+
+- assuming we have a piece of memory we want to protect from simultaneous access
+-> we can assign a mutex to be the guardian of this memory
+- a mutex is bound to tthe memory it protects
+- a thread 1 whi wants toi access the protected memory mustt "lock" the mutex first
+- when thread 1 is under lock a thread 2 is blocked from access to the shared variable
+- it can acquire the lock is is suspended by the system
+
+- once reading or writing of thread1 is complete it must unlock the mutex so that tthread 2 can access the memory location
+- the code under lock is often called "critical section"
+- important : also read only access has to lock the mutex to prevent data_race (if another thread wantts tto modify)
+
+- when several threads try tto aquire and lock the mutex only one of them would be successful
+-> all other threads would automatically be put on hold
+
+- Once the thread who acquired the lock finished its job and unlocked the mutex, a queued thread waiting for access would be woken up and allowed to lock the mutex to proceed with his read / write operation
+- If all threads were to follow this protocol, a data race would effectively be avoided
+-> see 32_mutex_1.cpp
+
+- we provoke a data race here by using a delay functiuon in WaittingVehicles::pushback()
+(std::this_thread::sleep_for(std::chrono::microseconds(1)); // wait deliberately to expose the data race)
+
+--> with a sleep/delay function we can test concurrency bugs
+
+Using mutex to protect data
+-----------------------------
+
+4 sttraight forward steps:
+1. include <mutex>-header
+2. create std::mutex
+3. lock the muttext usingh lock() before read/write is called
+4. unlock mutex after read/write operation is finished with unlock()
+
+-> see 33_mutex_2.cpp
+- here we also lock the mutex in tthe read-functionality (print-function) to prevent a data race which would occure when reading and writing to tthe vector at the same time
+- and we want to reserve the standard output to console for printing without other thread printing at the same time
+-> witth the mutex/lock we avoided effectively a data race
+
+Using timed_mutex
+----------------
+
+there a different mutex_types
+
+mutex: provides the core functions lock() and unlock() and the non-blocking try_lock() method that returns if the mutex is not available.
+recursive_mutex: allows multiple acquisitions of the mutex from the same thread.
+timed_mutex: similar to mutex, but it comes with two more methods try_lock_for() and try_lock_until() that try to acquire the mutex for a period of time or until a moment in time is reached.
+recursive_timed_mutex: is a combination of timed_mutex and recursive_mutex
+
+Use mutex to avoid deadlocks
+---------------------
+
+- if an exception would be thrown between lock() / unlock() a thread would be in locked mode and no other could unlock it 
+-> the mutex would remain locked indefinitly (deadlock) and tthe program would freeze
+-> see 35_mutex_4_deadlock.cpp
+
+Deadlock2
+------------
+
+- A second type of deadlock is a state in which two or more threads are blocked because each thread waits for the resource of the other thread to be released before releasing its resource
+-> the result of the deadlock is a complete standstill, the thread and therefore usually the whole program is blocked forever
+
+- see 38_mutex_7_deadlock2
+
+-> thread A & B both require access to the console
+- they request the ressource in a different order
+- if the threads works interlocked (1. ThreadA locks mutex1 , then Thread B locks mutex 2) -> deadlock state
+-> each thread tries to lock the other mutex and needs to wait for its release - which never comes
+
+Using locks to avoid deadlocks
+------------------
+
+- until now we directly called lock() / unlock()
+-> idea is to avoid unwanted access by other threads to the same ressource
+- only the thread which aquired the lock can unlock it
+- but in practice we should avoid to call lock() directly
+- if for some rease we get an exception btw. lock() / unlock() it could happen that we never call unlock()
+
+-> for this we can use std::lock_guard to avoid this problem
+- this keeps the associated mutex locked over the entire object life and is released automatically on destruction
+-> this makes it impossible to forget unlocking a critical section
+-> also it guarantees exception safety because any critical section is unlocked when an exception is thrown
+- see 40_mutex_9_lockguard.cpp
+
+unique lock
+-----------
+- a more flexible way 
+- with std::lock_guard we can only lock the mutex once
+- this also provides support for more advanced mechanisms, such as deferred locking, time locking, recursive locking, transfer of lock ownership and use of condition variables
+- see 41_mutex_unique_lock.cpp
+
+- here std::lock_guard has been replaced with std::unique_lock
+- as before, the lock object lck will unlock the mutex in its destructor, when divideByNumber() returns and lck gets out of scope
+- std::unique_lock offers the additional flexibility to engage and disengage the lock as needed by manually calling lock() and unlock()
+- This can greatly improve the performance of a concurrent program, especially when many threads are waiting for access to a locked resource
+- in the .cpp the lock is released before some non-critical work is performed (simulated by sleep_for) and re-engaged before some other work is performed in the critical section and thus under the lock again 
+- This is useful for optimizing performance and responsiveness when a significant amount of time passes between two accesses to a critical resource
+
+The main advantages of using std::unique_lock<> over std::lock_guard:
+
+1. …construct an instance without an associated mutex using the default constructor
+2. …construct an instance with an associated mutex while leaving the mutex unlocked at first using the deferred-locking constructor
+3. …construct an instance that tries to lock a mutex, but leaves it unlocked if the lock failed using the try-lock constructor
+4. …construct an instance that tries to acquire a lock for either a specified time period or until a specified point in time
+
+
+... , however, the deadlock situation where two mutexes are accessed simultaneously will still occur
+
+- weiter bei 3.3.3
+
+Avoiding deadlocks with std::lock()
+--------------------
