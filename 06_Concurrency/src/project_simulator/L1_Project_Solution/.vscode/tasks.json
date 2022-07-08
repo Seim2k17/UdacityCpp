@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "shell",
+        "label": "My clang++ build active file",
+        "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++",
+        "args": [
+          "-g",
+          "-std=c++17",
+          "${fileDirname}/${fileBasename}",
+          "${fileDirname}/Vehicle.cpp",
+          "${fileDirname}/TrafficObject.cpp",
+          "${fileDirname}/Intersection.cpp",
+          "${fileDirname}/Street.cpp",
+          "${fileDirname}/Graphics.cpp",
+          "-o",
+          "${workspaceFolder}/bin/${fileBasenameNoExtension}",
+          "`pkg-config",
+          "--libs",
+          "--cflags",
+          "opencv4`"
+        ],
+        "options": {
+          "cwd": "${fileDirname}"
+        },
+        "problemMatcher": [
+          "$gcc"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      }
+    ]
+  }

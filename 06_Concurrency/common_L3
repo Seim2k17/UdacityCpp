@@ -161,3 +161,32 @@ The main advantages of using std::unique_lock<> over std::lock_guard:
 
 Avoiding deadlocks with std::lock()
 --------------------
+
+- in most case one should only hold one lock on a mutex at a time
+- occsionally we can nest locks (calling a subsystem) but generally its better to avoid locks on multiple mutexes at the same time
+- but sometimes we need to operate on 2 different data alements each protected by its own mutex
+-> careful! see 42_mutex_lockguard2_deadlock.cpp (although we use 2 lockguards -> a deadlock iss produced)
+
+- we can use std::lock we can ensure that mutexes are always locked in the same order, regardless of the order of the arguments
+-> std::adopt_lock allows us tto use std::lock_guard on an already locked mutex
+-> see 43_mutex_lockguard3_nodeadlock.cpp
+
+-> but as a rule of thumb programmers should avoid using several mutexes at once (in praxiss this is the majority of cases), for the rest using std::lock is a safe way to avoid deadlocks
+
+-------
+
+L3 - in the project data races are hidden, make them visible and protect the shared ressources
+
+- we have shared ressources in the class WaitingVehicles _vehicles / _promises#
+-> defin data Race: at least one process is writing to a shared ressource while others are reading or writing at the same time
+- accesss to the console should also be protected to not mix up output
+
+task: use concept of mutex and lock to ensure that the concurrent access of threads to the shared resources is safe and does not cause a data race
+-> even though the graphical appearance will not change, a critical bug will be removed
+
+Project Tasks
+Task L3.1 : In class WaitingVehicles, safeguard all accesses to the private members _vehicles and _promises with an appropriate locking mechanism, that will not cause a deadlock situation where access to the resources is accidentally blocked.
+
+Task L2.2 : Add a static mutex to the base class TrafficObject (called _mtxCout) and properly instantiate it in the source file. This mutex will be used in the next task to protect standard-out.
+
+Task L2.3 : In method Intersection::addVehicleToQueue and in Vehicle::drive() ensure that the text output locks the console as a shared resource. Use the mutex _mtxCout you have added to the base class TrafficObject in the previous task. Make sure that in between the two calls to std::cout at the beginning and at the end of addVehicleToQueue the lock is not held.
