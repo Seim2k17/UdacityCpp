@@ -8,7 +8,16 @@ Workspace
 
 1/6 The Monitor Object Pattern
 The monitor object pattern
-In the previous sections we have learned that data protection is a critical element in concurrent programming. After looking at several ways to achieve this, we now want to build on these concepts to devise a method for a controlled and finely-grained data exchange between threads - a concurrent message queue. One important step towards such a construct is to implement a monitor object, which is a design pattern that synchronizes concurrent method execution to ensure that only one method at a time runs within an object. It also allows an object's methods to cooperatively schedule their execution sequences. The problem solved by this pattern is based on the observation that many applications contain objects whose methods are invoked concurrently by multiple client threads. These methods often modify the state of their objects, for example by adding data to an internal vector. For such concurrent programs to execute correctly, it is necessary to synchronize and schedule access to the objects very carefully. The idea of a monitor object is to synchronize the access to an object's methods so that only one method can execute at any one time.
+In the previous sections we have learned that data protection is a critical element in concurrent programming. 
+After looking at several ways to achieve this, we now want to build on these concepts to devise a method for a controlled 
+and finely-grained data exchange between threads - a concurrent message queue. 
+One important step towards such a construct is to implement a monitor object, which is a design pattern that synchronizes 
+concurrent method execution to ensure that only one method at a time runs within an object. 
+It also allows an object's methods to cooperatively schedule their execution sequences. 
+The problem solved by this pattern is based on the observation that many applications contain objects whose methods are invoked concurrently
+ by multiple client threads. These methods often modify the state of their objects, for example by adding data to an internal vector. 
+ For such concurrent programs to execute correctly, it is necessary to synchronize and schedule access to the objects very carefully. 
+ The idea of a monitor object is to synchronize the access to an object's methods so that only one method can execute at any one time.
 
 Code (C1)
 
@@ -81,9 +90,12 @@ int main()
     return 0;
 }
 
-2/6 In a previous section, we have looked at a code example which came pretty close to the functionality of a monitor object : the class WaitingVehicles.
+2/6 In a previous section, we have looked at a code example which came pretty close to the functionality of a monitor object : 
+the class WaitingVehicles.
 
-Let us modify and partially reimplement this class, which we want to use as a shared place where concurrent threads may store data, in our case instances of the class Vehicle. As we will be using the same WaitingVehicles object for all the threads, we have to pass it to them by reference - and as all threads will be writing to this object at the same time (which is a mutating operation) we will pass it as a shared pointer. Keep in mind that there will be many threads that will try to pass data to the WaitingVehicles object simultaneously and thus there is the danger of a data race.
+Let us modify and partially reimplement this class, which we want to use as a shared place where concurrent threads may store data, 
+in our case instances of the class Vehicle. As we will be using the same WaitingVehicles object for all the threads, 
+we have to pass it to them by reference - and as all threads will be writing to this object at the same time (which is a mutating operation) we will pass it as a shared pointer. Keep in mind that there will be many threads that will try to pass data to the WaitingVehicles object simultaneously and thus there is the danger of a data race.
 
 Before we take a look at the implementation of WaitingVehicles, let us look at the main function first where all the threads are spawned. We need a vector to store the futures as there is no data to be returned from the threads. Also, we need to call wait() on the futures at the end of main() so the program will not prematurely exit before the thread executions are complete.
 

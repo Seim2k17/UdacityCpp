@@ -15,6 +15,7 @@ class Vehicle;
 class WaitingVehicles
 {
 public:
+    std::mutex mtx;
     // getters / setters
     int getSize();
 
